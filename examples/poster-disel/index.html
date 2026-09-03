@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DISeL — Learning When to Adapt</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- MathJax 3 with TeX (Computer Modern) — the classic ICML/NeurIPS / LaTeX article look -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+    packages: {'[+]': ['ams', 'color', 'boldsymbol']},
+    macros: {
+      W: '\\mathbf{W}',
+      x: '\\mathbf{x}',
+      y: '\\mathbf{y}',
+      A: '\\mathbf{A}',
+      B: '\\mathbf{B}',
+      M: '\\mathbf{M}',
+      G: '\\mathbf{G}',
+      wg: '\\mathbf{w}_{g}',
+      bg: '\\mathbf{b}_{g}',
+      Wg: '\\mathbf{W}_{g}',
+      Wo: '\\mathbf{W}_{0}',
+      Delt: '\\boldsymbol{\\Delta}',
+      muft: '\\boldsymbol{\\mu}_{\\mathrm{ft}}',
+      mupt: '\\boldsymbol{\\mu}_{\\mathrm{pt}}',
+      Sig: '\\boldsymbol{\\Sigma}',
+      Lc: '\\mathcal{L}',
+      Rb: '\\mathbb{R}',
+      E: '\\mathbb{E}',
+      pift: '\\pi_{\\mathrm{ft}}',
+      pft: 'p_{\\mathrm{ft}}',
+      ppt: 'p_{\\mathrm{pt}}'
+    }
+  },
+  loader: { load: ['[tex]/ams', '[tex]/color', '[tex]/boldsymbol'] },
+  chtml: {
+    fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2',
+    matchFontHeight: false,
+    mtextInheritFont: false,
+    scale: 1.0
+  },
+  startup: {
+    pageReady() {
+      return MathJax.startup.defaultPageReady().then(function () {
+        window.mathJaxReady = true;
+      });
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+
+<div class="poster">
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="header">
+    <div class="title-block">
+      <h1>
+        Learning When to Adapt
+        <span class="sub">DISeL — Dynamic Input-Sensitive LoRA</span>
+      </h1>
+      <div class="authors">
+        Ali Zindari<sup>1,2</sup> &nbsp; Xiaowen Jiang<sup>1,2</sup> &nbsp;
+        Rotem Mulayoff<sup>2</sup> &nbsp; Sebastian U. Stich<sup>2</sup>
+      </div>
+      <div class="affil">
+        <sup>1</sup>Universität des Saarlandes &nbsp;·&nbsp;
+        <sup>2</sup>CISPA Helmholtz Center for Information Security, Saarbrücken, Germany
+      </div>
+      <div class="code">
+        <span class="label">project</span> &nbsp;github.com/alizindari/DISeL
+      </div>
+    </div>
+    <div class="header-side">
+      <img class="cispa-logo" src="figures/svg/cispa_logo.svg" alt="CISPA Helmholtz Center for Information Security">
+      <div class="tag-row">
+        <span class="tag-pill">PEFT</span>
+        <span class="tag-pill alt">LLM&nbsp;Fine-tuning</span>
+        <span class="tag-pill outline">Forgetting</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       TL;DR
+       ============================================================ -->
+  <section class="tldr">
+    <div class="tag">TL;DR</div>
+    <div class="body">
+      LoRA applies the <em>same</em> low-rank correction to <em>every</em> input. This forces an inherent
+      compromise between adapting to the task and preserving pre-trained behavior.
+      <strong>DISeL</strong> places lightweight input-dependent sigmoid gates on individual rank-one
+      components, so the adapter is <strong>active only when needed</strong>.
+      Same low-rank structure, near-zero added cost, and <strong>retention close to the base model</strong>
+      across LLaMA, Mistral, and RoBERTa.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       THREE-COLUMN BODY
+       ============================================================ -->
+  <main class="columns">
+
+    <!-- =====================================================
+         COLUMN 1
+         ===================================================== -->
+    <div class="col">
+
+      <section class="card">
+        <h2><span class="num">1</span>The forgetting problem</h2>
+        <p>
+          A fine-tuned model adds a learnable correction $f(\x;\theta)$ on top of the
+          frozen pre-trained weights:
+        </p>
+        <div class="eqbox method">
+          $$\y \;=\; \Wo\,\x \,+\, f(\x;\theta).$$
+        </div>
+        <p>
+          Full FT, LoRA, DoRA, AdaLoRA are all the special case
+          $f(\x;\theta) = \Delt\,\x$, with a <em>fixed</em> matrix $\Delt$ that does
+          <em>not</em> depend on $\x$. They differ only in how $\Delt$ is parameterized.
+        </p>
+        <p>
+          The same correction $\Delt\,\x$ is therefore applied to fine-tuning inputs
+          (where adaptation is needed) <em>and</em> to pre-training inputs
+          (where the original mapping should be preserved).
+        </p>
+        <p>
+          <strong class="key">Consequence:</strong> task accuracy improves, but the model loses general
+          capability. This is <em class="term">catastrophic forgetting</em>.
+        </p>
+        <div class="callout">
+          <strong>Question.</strong> Is there a structural reason a fixed $\Delt$ must
+          forget, even in the simplest possible setting?
+        </div>
+      </section>
+
+      <section class="card accent">
+        <h2><span class="num">2</span>A minimal linear analysis</h2>
+        <p>Symmetric mixture of fine-tuning and pre-training populations:</p>
+        <div class="eqbox">
+          $$\x \,\sim\, \begin{cases}\pft & \text{w.p. }\tfrac{1}{2}, \\[1pt] \ppt & \text{w.p. }\tfrac{1}{2},\end{cases} \qquad
+            \y \,=\, \begin{cases}(\Wo + \M)\,\x & \text{when }\x \sim \pft, \\[1pt] \Wo\,\x & \text{when }\x \sim \ppt.\end{cases}$$
+        </div>
+        <p>Loss after subtracting the frozen mapping:</p>
+        <div class="eqbox">
+          $$\Lc(f)  =  \tfrac{1}{2}\,\E_{\pft}\bigl[\,\|f(\x)-\M\,\x\|^{2}\,\bigr]
+            \;+\; \tfrac{1}{2}\,\E_{\ppt}\bigl[\,\|f(\x)\|^{2}\,\bigr].$$
+        </div>
+
+        <h3>No fixed correction can do both</h3>
+        <p>With equal second moments $\Sig$, the optimal <em>fixed</em> $\Delt$ is</p>
+        <div class="eqbox thm">
+          $$\Delt^{\star} \,=\, \tfrac{1}{2}\,\M, \qquad
+            \Lc(\Delt^{\star}) \,=\, \tfrac{1}{4}\operatorname{Tr}\bigl(\M\,\Sig\,\M^{\top}\bigr) \;>\; 0.$$
+        </div>
+        <p>
+          No fixed $\Delt$, including full FT, can both fit the FT signal <em>and</em> preserve pre-training:
+          it applies only <em>half</em> of the desired update on $\pft$ and a non-zero spurious update on $\ppt$.
+        </p>
+
+        <h3>Bayes-optimal input-dependent correction</h3>
+        <p>Allowing $f$ to depend on $\x$, the pointwise minimizer is</p>
+        <div class="eqbox thm">
+          $$\begin{gathered}
+            f^{\star}(\x) \,=\, \pift(\x)\,\M\,\x, \qquad \pift(\x) \,=\, \frac{\pft(\x)}{\pft(\x)+\ppt(\x)} \,\in\, [\,0,\,1\,], \\[3mm]
+            \Lc_{\text{Bayes}} \,=\, \tfrac{1}{2}\int \frac{\pft(\x)\,\ppt(\x)}{\pft(\x)+\ppt(\x)}\,\|\M\,\x\|^{2}\,d\x.
+          \end{gathered}$$
+        </div>
+        <p>
+          A <em>soft switch</em>: $\pift\to 1$ on FT inputs, $\pift\to 0$ on pre-training inputs.
+          No measurable correction can do better.
+        </p>
+
+        <h3>Gaussian case: the sigmoid is exact</h3>
+        <p>
+          When $\pft=\mathcal{N}(\muft,\Sig)$ and $\ppt=\mathcal{N}(\mupt,\Sig)$ share covariance, the
+          log-density ratio is <em>affine</em>, so the posterior is a sigmoid:
+        </p>
+        <div class="eqbox thm">
+          $$\log\frac{\pft(\x)}{\ppt(\x)}  =  \wg^{\top}\x + b_g,
+            \qquad \pift(\x) \,=\, \sigma\bigl(\wg^{\top}\x + b_g\bigr),$$
+          $$\wg \,=\, \Sig^{-1}(\muft-\mupt)\in\Rb^{d}, \qquad
+            b_g \,=\, \tfrac{1}{2}\bigl(\mupt^{\top}\Sig^{-1}\mupt - \muft^{\top}\Sig^{-1}\muft\bigr)\in\Rb.$$
+        </div>
+        <p>
+          Hence the Bayes-optimal correction has the closed form
+        </p>
+        <div class="eqbox thm">
+          $$f^{\star}(\x)  =  \sigma\bigl(\wg^{\top}\x + b_g\bigr)\,\M\,\x.$$
+        </div>
+
+        <h3>DISeL realizes $f^{\star}$ exactly</h3>
+        <p>
+          Factor $\M=\A\B$ (which exists whenever $\operatorname{rank}(\M)\le r$). Set the gate parameters
+        </p>
+        <div class="eqbox method">
+          $$\Wg \,=\, \mathbf{1}_{r}\,\wg^{\top} \,\in\, \Rb^{r\times d_x},
+            \qquad \bg \,=\, b_g\,\mathbf{1}_{r}\,\in\,\Rb^{r}.$$
+        </div>
+        <p>Then every rank's gate carries the same value $g_i(\x)=\pift(\x)$, so</p>
+        <div class="eqbox method">
+          $$\A\,\G(\x)\,\B\,\x  =  \pift(\x)\,\A\B\,\x  =  \pift(\x)\,\M\,\x  =  f^{\star}(\x).$$
+        </div>
+        <p>
+          A sigmoid-gated LoRA with the right parameters realizes the Bayes-optimal correction exactly.
+          DISeL is the smallest learnable family containing this optimum.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">3</span>Toy experiment</h2>
+        <div class="fig-grid-2">
+          <div class="fig">
+            <img src="figures/svg/toy_mse.svg" alt="Toy MSE">
+          </div>
+          <div class="fig">
+            <img src="figures/svg/toy_gates.svg" alt="Gate values">
+          </div>
+        </div>
+        <div class="fig">
+          <div class="cap">
+            <b>Fig. 1.</b> Left: LoRA and Full FT hit the fixed-correction floor; DISeL approaches the Bayes-optimal error on both domains. Right: learned gates concentrate near 1 on FT inputs and near 0 on pre-training inputs.
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /col 1 -->
+
+
+    <!-- =====================================================
+         COLUMN 2
+         ===================================================== -->
+    <div class="col">
+
+      <section class="card gold">
+        <h2><span class="num">4</span>DISeL: input-dependent gates over rank-1 components</h2>
+        <p>
+          We keep LoRA's low-rank structure $\A\B\x$ with
+          $\A \in \Rb^{d_y\times r}$ and $\B \in \Rb^{r\times d_x}$,
+          but multiply each rank-one component by a learnable input-dependent gate
+          $g_i(\x) \in [0,1]$:
+        </p>
+        <div class="eqbox method">
+          $$f(\x;\theta) \,=\, \A\,\G(\x)\,\B\,\x
+             \,=\, \sum_{i=1}^{r} g_i(\x)\,\mathbf{a}_i\,\mathbf{b}_i^{\top}\,\x,$$
+          $$\G(\x) \,=\, \operatorname{diag}\bigl(g(\x)\bigr), \qquad
+            g(\x) \,=\, \sigma\bigl(\Wg\,\x + \bg\bigr) \,\in\, [0,1]^{r}.$$
+        </div>
+
+        <h3>DISeL block</h3>
+        <div class="disel-diagram">
+         <div class="stage">
+          <svg viewBox="0 0 920 250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <marker id="arrN" viewBox="0 0 12 12" refX="11" refY="6"
+                      markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f3a5f"/>
+              </marker>
+              <marker id="arrA" viewBox="0 0 12 12" refX="11" refY="6"
+                      markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#b6552c"/>
+              </marker>
+              <marker id="arrG" viewBox="0 0 12 12" refX="11" refY="6"
+                      markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#b9882b"/>
+              </marker>
+            </defs>
+
+            <!-- nodes & boxes (math labels overlaid as HTML below) -->
+            <circle cx="50"  cy="125" r="24" fill="#fff" stroke="#1f3a5f" stroke-width="2.5"/>
+
+            <!-- FROZEN — identical dimensions to GATE -->
+            <rect x="320" y="25"  width="300" height="60" rx="6" fill="#eaf0f8" stroke="#1f3a5f" stroke-width="2.4"/>
+            <text x="470" y="44" text-anchor="middle" font-family="Times, 'Times New Roman', serif"
+                  font-size="14" font-weight="700" letter-spacing="1.2" fill="#1f3a5f">FROZEN</text>
+
+            <rect x="210" y="170" width="70"  height="50" rx="6" fill="#fbf0e6" stroke="#b6552c" stroke-width="2.2"/>
+
+            <!-- GATE — identical dimensions to FROZEN -->
+            <rect x="320" y="165" width="300" height="60" rx="6" fill="#f3ecd9" stroke="#b9882b" stroke-width="2.4"/>
+            <text x="470" y="183" text-anchor="middle" font-family="Times, 'Times New Roman', serif"
+                  font-size="13" font-weight="700" letter-spacing="1.4" fill="#b9882b">GATE</text>
+
+            <rect x="660" y="170" width="70"  height="50" rx="6" fill="#fbf0e6" stroke="#b6552c" stroke-width="2.2"/>
+
+            <circle cx="795" cy="125" r="24" fill="#fff" stroke="#1f3a5f" stroke-width="2.5"/>
+            <circle cx="875" cy="125" r="24" fill="#1f3a5f"/>
+
+            <!-- arrows -->
+            <path d="M 70 113 C 195 45, 260 55, 318 55"   stroke="#1f3a5f" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
+            <path d="M 70 137 C 130 195, 160 195, 208 195" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 130 175 C 210 145, 330 145, 420 165" stroke="#b9882b" stroke-width="3.5" stroke-dasharray="8 5"
+                  fill="none" stroke-linecap="round" marker-end="url(#arrG)"/>
+            <circle cx="130" cy="175" r="5" fill="#b6552c"/>
+
+            <path d="M 280 195 L 318 195" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 620 195 L 658 195" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 730 195 C 765 195, 785 165, 789 152" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
+            <path d="M 620 55 C 720 55, 770 85, 778 108" stroke="#1f3a5f" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
+            <path d="M 819 125 L 849 125" stroke="#1f3a5f" stroke-width="2.6" fill="none" marker-end="url(#arrN)"/>
+
+          </svg>
+
+          <!-- HTML overlay math labels — MathJax renders them in the same font as the rest of the poster -->
+          <div class="mlab m-x"    style="left:5.4%;  top:50%;   color:#1f3a5f;">$\mathbf{x}$</div>
+          <div class="mlab m-wox"  style="left:51.1%; top:26%;">$\mathbf{W}_{\!0}\,\mathbf{x}$</div>
+          <div class="mlab m-B"    style="left:26.6%; top:78%;   color:#b6552c;">$\mathbf{A}$</div>
+          <div class="mlab m-gate" style="left:51.1%; top:82.8%; font-size:0.78em;">$\operatorname{diag}\bigl(\sigma(\mathbf{W}_{\!g}\,\mathbf{x} + \mathbf{b}_g)\bigr)$</div>
+          <div class="mlab m-A"    style="left:75.5%; top:78%;   color:#b6552c;">$\mathbf{B}$</div>
+          <div class="mlab m-plus" style="left:86.4%; top:50%;   color:#1f3a5f;">$+$</div>
+          <div class="mlab m-y"    style="left:95.1%; top:50%;   color:#fff;">$\mathbf{y}$</div>
+         </div>
+        </div>
+
+        <h3>Design choices</h3>
+        <ul>
+          <li><strong class="key">Init.</strong> $\bg = -3\cdot\mathbf{1}$, so $\sigma(\bg)\approx 0.05$. DISeL <em>starts equal to the pre-trained model</em>.</li>
+          <li><strong class="key">Sigmoid (not softmax).</strong> Rank-one components are independent soft switches.</li>
+          <li><strong class="key">Two-LR.</strong> Gates use a learning rate $5\times$ larger than $(\A,\B)$, since they solve a <em>routing</em> task, not a fitting one.</li>
+        </ul>
+
+      </section>
+
+      <section class="card">
+        <h2><span class="num">5</span>LLaMA &amp; Mistral on math &amp; code</h2>
+        <p>
+          LLaMA-2-7B on <em>MetaMathQA</em>; Mistral-7B on <em>Magicoder-Evol-Instruct</em>.
+          Retention = mean accuracy on 14 OOD benchmarks (commonsense, world knowledge, medical QA, …).
+        </p>
+        <div class="fig stack-fig">
+          <img src="figures/svg/llama_tradeoff.svg" alt="LLaMA tradeoff">
+        </div>
+        <div class="fig stack-fig">
+          <img src="figures/svg/mistral_tradeoff.svg" alt="Mistral tradeoff">
+          <div class="cap">
+            <b>Fig. 2.</b> FT accuracy vs.&nbsp;retention for
+            <em>LLaMA / math</em> (top) and <em>Mistral / code</em> (bottom).
+            DISeL stays near the base across $r\in\{16,32,64,128,256\}$.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">DISeL</strong>: $\approx 60\%$ math accuracy (LLaMA) / $> 70\%$ code (Mistral) with retention within a fraction of the base.</li>
+          <li><strong class="key">LoRA / DoRA</strong>: retention drops 4–8% at the largest ranks.</li>
+          <li><strong class="key">AdaLoRA</strong>: keeps retention but FT accuracy collapses to 40–50%.</li>
+          <li><strong class="key">Implicit regularization.</strong> Gates stabilize training at large LR / rank.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">6</span>RoBERTa on GLUE</h2>
+        <p>
+          RoBERTa-base on five GLUE tasks, $r\in\{4,8,16,32,64\}$. Retention = mean MLM perplexity
+          (base $\approx 6.4$).
+        </p>
+        <div class="fig">
+          <img src="figures/svg/all_methods_simple_acc.svg" alt="RoBERTa GLUE tradeoff">
+          <div class="cap">
+            <b>Fig. 3.</b> FT accuracy vs.&nbsp;MLM perplexity. DISeL &amp; AdaLoRA stay near the
+            pre-trained baseline; LoRA / DoRA forget more; Full FT forgets most.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">DISeL &amp; AdaLoRA</strong>: $\text{ppl}\approx 9$, matching Full FT accuracy without any pruning schedule.</li>
+          <li><strong class="key">Full FT</strong> tops accuracy but pushes ppl to $\approx 150$; <strong class="key">LoRA / DoRA</strong> sit at ppl $30$–$100$.</li>
+        </ul>
+      </section>
+
+    </div><!-- /col 2 -->
+
+
+    <!-- =====================================================
+         COLUMN 3
+         ===================================================== -->
+    <div class="col">
+
+      <section class="card accent">
+        <h2><span class="num">7</span>Retention over training</h2>
+        <p>
+          Retention trajectory of LLaMA-2-7B on MetaMathQA across saved checkpoints,
+          for ranks $r\in\{16,32,64,128,256\}$.
+        </p>
+        <div class="fig-grid-2">
+          <div class="fig">
+            <img src="figures/svg/gated_lora_forgetting_vs_checkpoint_llama.svg" alt="DISeL retention">
+          </div>
+          <div class="fig">
+            <img src="figures/svg/lora_forgetting_vs_checkpoint_llama.svg" alt="LoRA retention">
+          </div>
+        </div>
+        <div class="fig">
+          <div class="cap">
+            <b>Fig. 6.</b>
+            <b style="color:var(--accent);">DISeL (left):</b>
+            near-flat retention at every rank, including the largest.
+            <b style="color:var(--primary);">LoRA (right):</b>
+            steady drift downward with both rank and training time.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">DISeL.</strong> Retention within $\approx 0.5\%$ of the base model at every rank and checkpoint.</li>
+          <li><strong class="key">LoRA.</strong> Largest drift ($\approx 5\%$) at $r=128$, not $r=256$: $r=256$ needed a smaller learning rate ($10^{-4}$) for stability while $r=128$ used a twice-larger step. <em>Rank alone does not decide forgetting &mdash; learning rate matters too.</em></li>
+          <li><strong class="key">Mechanism.</strong> DISeL gates stay inactive on pre-training inputs, so neither extra capacity nor larger learning rates leak into drift.</li>
+        </ul>
+        <div class="callout">
+          <strong>Rank decoupled from forgetting.</strong> DISeL safely allows larger $r$ <em>and</em> larger learning rates with no retention penalty.
+        </div>
+      </section>
+
+      <section class="card gold">
+        <h2><span class="num">8</span>Interpretability: <em>where</em> &amp; <em>when</em> gates open</h2>
+        <p>
+          Held-out samples from three domains (math = FT, general text, code).
+          Gate activations recorded at every adapted layer of the rank-32 LLaMA math adapter.
+        </p>
+
+        <h3>Domain-conditioned routing</h3>
+        <div class="fig">
+          <img src="figures/svg/r32_lr2e-4_glr1e-3_b-3.0_math_vs_general_vs_code.svg" alt="Gates by domain">
+          <div class="cap">
+            <b>Fig. 4.</b> Early layers stay closed; <em>middle and late</em> layers separate cleanly:
+            math (FT domain) opens gates much wider than general text (pre-training domain).
+            Code, which shares structured reasoning with math, sits in between.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">Early layers</strong> stay closed across all domains, so no adaptation is needed near the input.</li>
+          <li><strong class="key">Middle / late layers</strong>: math $\bar g \approx 0.41 \to 0.41$; general text $\bar g \approx 0.18 \to 0.23$, a clear separation.</li>
+          <li><strong class="key">Code</strong> sits between math and general text because it shares structured reasoning with math.</li>
+        </ul>
+
+        <h3>Module-level routing</h3>
+        <div class="fig">
+          <img src="figures/svg/r32_lr2e-4_glr1e-3_b-3.0_per_module_math_v_up_down.svg" alt="Gates by module">
+          <div class="cap">
+            <b>Fig. 5.</b> On math inputs, <em>up_proj</em> in middle/late layers
+            carries the bulk of the adaptation (mean gate $\approx 0.57$).
+            <em>v_proj</em> remains comparatively closed.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">up_proj</strong> dominates the math adaptation, with middle/late mean gate $\approx 0.57$.</li>
+          <li><strong class="key">down_proj</strong> shows a weaker version of the same trend ($\bar g \approx 0.31$).</li>
+          <li><strong class="key">v_proj</strong> stays comparatively closed ($\bar g \approx 0.16$).</li>
+          <li><strong class="key">A free diagnostic.</strong> Gate statistics reveal <em>where</em> task-specific capacity concentrates, which is useful for adaptive rank selection and module design.</li>
+        </ul>
+      </section>
+
+      <section class="takeaways">
+        <h2><span class="num">★</span>Takeaways</h2>
+        <ul>
+          <li>
+            Any fixed adapter (full FT, LoRA, DoRA, AdaLoRA) must <strong class="key">compromise</strong>
+            between fitting the task and preserving pre-trained behavior. We prove this in a minimal
+            linear-regression model and show it empirically.
+          </li>
+          <li>
+            The Bayes-optimal input-dependent correction is a <em class="term">sigmoid gate</em>
+            times the task update, which directly motivates DISeL.
+          </li>
+          <li>
+            DISeL adds <strong class="key">$rd_x + r$ parameters per block</strong> (≲ 1% of LoRA),
+            <strong class="key">matches LoRA's inference cost</strong>, and starts equal to the pre-trained model.
+          </li>
+          <li>
+            Across RoBERTa / GLUE, LLaMA / math, Mistral / code, DISeL
+            <strong class="key">decouples adapter rank from forgetting</strong>: retention stays near the base model
+            while FT accuracy meets or beats LoRA, DoRA, AdaLoRA.
+          </li>
+          <li>
+            Learned gate activations give a free <strong class="key">interpretability tool</strong>: they
+            reveal which layers and modules absorb task-specific signal (here: up_proj,
+            middle/late layers).
+          </li>
+        </ul>
+      </section>
+
+    </div><!-- /col 3 -->
+
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <div class="left">
+      Universität des Saarlandes &nbsp;·&nbsp; CISPA Helmholtz Center for Information Security
+    </div>
+    <div class="center">github.com/alizindari/DISeL</div>
+    <div class="right">Funded by the Helmholtz Association &amp; ERC HORIZON #101170430 CollectiveMinds</div>
+  </footer>
+
+</div><!-- /poster -->
+
+</body>
+</html>

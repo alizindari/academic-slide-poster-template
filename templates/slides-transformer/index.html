@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Self-attention</title>
+  <link rel="stylesheet" href="../../shared/slide-system/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="../../shared/slide-system/theme.css">
+  <link rel="stylesheet" href="deck.css">
+</head>
+<body>
+  <main class="deck" data-slide-deck>
+    <!-- 1 -->
+    <section class="slide slide--cover is-active" data-title="Self-Attention">
+      <div class="cover-simple">
+        <div class="cover-kicker">Transformers, from first principles</div>
+        <h1 class="cover-title">Self-Attention</h1>
+        <p class="cover-subtitle">How tokens read and mix information</p>
+        <div class="cover-presenter">Ali Zindari</div>
+      </div>
+      <div class="slide__number">1</div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide" data-title="What is self-attention?">
+      <h1 class="slide__title">What is self-attention?</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content overview-layout">
+        <div class="overview-flow">
+          <div class="overview-matrix-card overview-matrix-card--input">
+            <div class="eyebrow blue">input</div>
+            <strong>\(\mat X\)</strong>
+            <div class="overview-rows" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <small>one row per token</small>
+          </div>
+          <div class="overview-arrow arrow"></div>
+          <div class="overview-attention panel">
+            <span>Self-attention</span>
+            <small>learned mixing block</small>
+          </div>
+          <div class="overview-arrow arrow"></div>
+          <div class="overview-matrix-card overview-matrix-card--output">
+            <div class="eyebrow green">output</div>
+            <strong>\(\mat Z\)</strong>
+            <div class="overview-rows" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <small>one contextual row per token</small>
+          </div>
+        </div>
+
+        <div class="overview-transformer">
+          <div class="overview-transformer-label">
+            <span class="eyebrow">inside a Transformer layer</span>
+            <strong>A crucial building block</strong>
+          </div>
+          <div class="overview-layer-flow">
+            <div class="overview-layer-block overview-layer-block--attention">Self-attention</div>
+            <div class="overview-layer-arrow">→</div>
+            <div class="overview-layer-block">Add &amp; normalize</div>
+            <div class="overview-layer-arrow">→</div>
+            <div class="overview-layer-block">Feed-forward</div>
+          </div>
+        </div>
+
+        <div class="overview-takeaway">Each output token keeps its position, but now carries information gathered from the prompt.</div>
+      </div>
+      <div class="slide__number">2</div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide" data-title="Imagine predicting the next word">
+      <h1 class="slide__title">Imagine predicting the next word</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content">
+        <div class="s1-prompt">Sun rises in the</div>
+        <div class="s1-context-label eyebrow">input context</div>
+        <div class="s1-predict eyebrow">predict</div>
+        <div class="s1-missing panel">?</div>
+        <div class="s1-drop-line"></div>
+        <div class="s1-answer">east</div>
+        <div class="s1-target-label eyebrow">target word</div>
+      </div>
+      <div class="slide__number">3</div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide" data-title="The answer depends on the whole context">
+      <h1 class="slide__title">The answer depends on the whole context</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content">
+        <svg class="connector-layer" viewBox="0 0 1120 582" aria-hidden="true">
+          <defs>
+            <marker id="arrow-s2" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#171923"></path>
+            </marker>
+          </defs>
+          <path d="M215 166 L505 302" fill="none" stroke="#86a3ca" stroke-width="2"></path>
+          <path d="M445 166 L535 302" fill="none" stroke="#d08a83" stroke-width="2"></path>
+          <path d="M675 166 L585 302" fill="none" stroke="#78aa9b" stroke-width="2"></path>
+          <path d="M905 166 L615 302" fill="none" stroke="#85878d" stroke-width="2"></path>
+          <path d="M560 374 L560 457" fill="none" stroke="#171923" stroke-width="2.5" marker-end="url(#arrow-s2)"></path>
+        </svg>
+        <div class="s2-token-row above-connectors">
+          <div class="s2-token panel">Sun</div>
+          <div class="s2-token panel">rises</div>
+          <div class="s2-token panel">in</div>
+          <div class="s2-token panel">the</div>
+        </div>
+        <div class="s2-combine panel panel--task above-connectors">combine information</div>
+        <div class="s2-answer above-connectors">east</div>
+        <div class="s2-answer-label eyebrow above-connectors">next word</div>
+      </div>
+      <div class="slide__number">4</div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide" data-title="Represent the input as token rows">
+      <h1 class="slide__title">Represent the input as token rows</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content s3-layout">
+        <div class="matrix-card">
+          <div class="eyebrow">simplified token-only example</div>
+          <div class="matrix-symbol">\(\mat{X}\)</div>
+          <div class="label-matrix">
+            <div class="row-labels">
+              <div>Sun</div><div>rises</div><div>in</div><div>the</div>
+            </div>
+            <div class="matrix">
+              <div class="matrix-row">\({\color{#3567A9}\mathbf{1}}\quad 0\quad 0\quad 0\)</div>
+              <div class="matrix-row">\(0\quad {\color{#3567A9}\mathbf{1}}\quad 0\quad 0\)</div>
+              <div class="matrix-row">\(0\quad 0\quad {\color{#3567A9}\mathbf{1}}\quad 0\)</div>
+              <div class="matrix-row">\(0\quad 0\quad 0\quad {\color{#3567A9}\mathbf{1}}\)</div>
+            </div>
+          </div>
+          <div class="s3-caption caption">one-hot rows in \(\mathbb{R}^{4}\)</div>
+        </div>
+        <div class="s3-arrow-wrap">
+          <div class="s3-arrow-label caption">one instance of</div>
+          <div class="s3-arrow arrow"></div>
+        </div>
+        <div class="matrix-card s3-general">
+          <div class="eyebrow">general form</div>
+          <div class="matrix-symbol">\(\mat{X}\)</div>
+          <div class="label-matrix">
+            <div class="matrix">
+              <div class="matrix-row"><span class="row-vector blue">\(\vect{x}_{1}^{\top}\)</span></div>
+              <div class="matrix-row"><span class="row-vector coral">\(\vect{x}_{2}^{\top}\)</span></div>
+              <div class="matrix-row"><span class="row-vector green">\(\vect{x}_{3}^{\top}\)</span></div>
+              <div class="matrix-row"><span class="row-vector">\(\vect{x}_{4}^{\top}\)</span></div>
+            </div>
+          </div>
+          <div class="s3-caption caption"><strong>token + position information</strong>\(\vect{x}_{i}^{\top}\in\mathbb{R}^{1\times d}\)</div>
+        </div>
+      </div>
+      <div class="slide__number">5</div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide" data-title="Right multiplication transforms token features">
+      <h1 class="slide__title">Right multiplication transforms token features</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content matrix-operation">
+        <div class="operation-formula math-xl">\(\mat{Z}=\mat{X}{\color{#765C99}\mat{W}}\)</div>
+        <div class="operation-stage input">
+          <div class="matrix-symbol">\(\mat{X}\)</div>
+          <div class="matrix operation-matrix">
+            <div class="matrix-row"><span class="row-vector blue">\(\vect{x}_{1}^{\top}\)</span></div>
+            <div class="matrix-row"><span class="row-vector coral">\(\vect{x}_{2}^{\top}\)</span></div>
+            <div class="matrix-row"><span class="row-vector green">\(\vect{x}_{3}^{\top}\)</span></div>
+            <div class="matrix-row"><span class="row-vector">\(\vect{x}_{4}^{\top}\)</span></div>
+          </div>
+        </div>
+        <div class="operation-symbols">
+          <span>\(\times\)</span><span class="weight">\(\mat{W}\)</span><span>\(=\)</span>
+        </div>
+        <div class="operation-stage output">
+          <div class="matrix-symbol">\(\mat{Z}\)</div>
+          <div class="matrix operation-matrix">
+            <div class="matrix-row"><span class="row-vector blue">\(\vect{x}_{1}^{\top}{\color{#765C99}\mat W}\)</span></div>
+            <div class="matrix-row"><span class="row-vector coral">\(\vect{x}_{2}^{\top}{\color{#765C99}\mat W}\)</span></div>
+            <div class="matrix-row"><span class="row-vector green">\(\vect{x}_{3}^{\top}{\color{#765C99}\mat W}\)</span></div>
+            <div class="matrix-row"><span class="row-vector">\(\vect{x}_{4}^{\top}{\color{#765C99}\mat W}\)</span></div>
+          </div>
+        </div>
+        <div class="operation-caption caption">the same <span class="weight">\(\mat{W}\)</span> transforms the features of every token row</div>
+      </div>
+      <div class="slide__number">6</div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide" data-title="Left multiplication mixes token rows">
+      <h1 class="slide__title">Left multiplication mixes token rows</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content matrix-operation s6">
+        <div class="operation-formula math-xl">\(\mat{Z}={\color{#B04F72}\mat{A}}\mat{X}\)</div>
+        <div class="operation-symbols"><span class="mix">\(\mat A\)</span><span>\(\times\)</span></div>
+        <div class="operation-stage input">
+          <div class="matrix-symbol">\(\mat{X}\)</div>
+          <div class="matrix operation-matrix">
+            <div class="matrix-row"><span class="row-vector blue">\(\vect{x}_{1}^{\top}\)</span></div>
+            <div class="matrix-row"><span class="row-vector coral">\(\vect{x}_{2}^{\top}\)</span></div>
+            <div class="matrix-row"><span class="row-vector green">\(\vect{x}_{3}^{\top}\)</span></div>
+            <div class="matrix-row"><span class="row-vector">\(\vect{x}_{4}^{\top}\)</span></div>
+          </div>
+        </div>
+        <div class="s6-equals">\(=\)</div>
+        <div class="operation-stage output">
+          <div class="matrix-symbol">\(\mat{Z}\)</div>
+          <div class="matrix operation-matrix">
+            <div class="matrix-row"><span class="mix-vector"><span class="row-vector">\({\color{#B04F72}\vect{a}_{1}^{\top}}\mat X\)</span></span></div>
+            <div class="matrix-row"><span class="mix-vector"><span class="row-vector">\({\color{#B04F72}\vect{a}_{2}^{\top}}\mat X\)</span></span></div>
+            <div class="matrix-row"><span class="mix-vector"><span class="row-vector">\({\color{#B04F72}\vect{a}_{3}^{\top}}\mat X\)</span></span></div>
+            <div class="matrix-row"><span class="mix-vector"><span class="row-vector">\({\color{#B04F72}\vect{a}_{4}^{\top}}\mat X\)</span></span></div>
+          </div>
+        </div>
+        <div class="operation-caption caption">each row <span class="mix">\(\vect{a}_{i}^{\top}\)</span>\(\mat{X}\) combines information from every input row</div>
+      </div>
+      <div class="slide__number">7</div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide" data-title="Right and left multiplication">
+      <h1 class="slide__title">Right and left multiplication</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content s7-simple">
+        <div class="s7-io-symbol s7-io-input">\(\mat X\)</div>
+        <div class="s7-io-arrow s7-io-arrow--input arrow"></div>
+        <div class="s7-one-box panel">
+          \(\displaystyle {\color{#B04F72}\mat A}\mat X{\color{#765C99}\mat W}\)
+        </div>
+        <div class="s7-io-arrow s7-io-arrow--output arrow"></div>
+        <div class="s7-io-symbol s7-io-output">\(\mat Z\)</div>
+        <div class="s7-simple-statement">Self-attention is just right and left multiplication.</div>
+      </div>
+      <div class="slide__number">8</div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide" data-title="Every prompt token creates a query, key, and value">
+      <h1 class="slide__title">Every prompt token creates \(\vect q_i,\vect k_i,\vect v_i\)</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content causal-qkv-layout">
+        <div class="causal-qkv-grid">
+          <div class="causal-token-card">
+            <div class="causal-token-name">Sun</div>
+            <div class="causal-token-input">\(\vect x_1\)</div>
+            <div class="causal-projection-arrow">↓</div>
+            <div class="causal-role-pill causal-role-pill--q">\(\vect q_1\)</div>
+            <div class="causal-role-pill causal-role-pill--k">\(\vect k_1\)</div>
+            <div class="causal-role-pill causal-role-pill--v">\(\vect v_1\)</div>
+          </div>
+          <div class="causal-token-card">
+            <div class="causal-token-name">rises</div>
+            <div class="causal-token-input">\(\vect x_2\)</div>
+            <div class="causal-projection-arrow">↓</div>
+            <div class="causal-role-pill causal-role-pill--q">\(\vect q_2\)</div>
+            <div class="causal-role-pill causal-role-pill--k">\(\vect k_2\)</div>
+            <div class="causal-role-pill causal-role-pill--v">\(\vect v_2\)</div>
+          </div>
+          <div class="causal-token-card">
+            <div class="causal-token-name">in</div>
+            <div class="causal-token-input">\(\vect x_3\)</div>
+            <div class="causal-projection-arrow">↓</div>
+            <div class="causal-role-pill causal-role-pill--q">\(\vect q_3\)</div>
+            <div class="causal-role-pill causal-role-pill--k">\(\vect k_3\)</div>
+            <div class="causal-role-pill causal-role-pill--v">\(\vect v_3\)</div>
+          </div>
+          <div class="causal-token-card causal-token-card--last">
+            <div class="causal-last-label eyebrow">last prompt position</div>
+            <div class="causal-token-name">the</div>
+            <div class="causal-token-input">\(\vect x_4\)</div>
+            <div class="causal-projection-arrow">↓</div>
+            <div class="causal-role-pill causal-role-pill--q">\(\vect q_4\)</div>
+            <div class="causal-role-pill causal-role-pill--k">\(\vect k_4\)</div>
+            <div class="causal-role-pill causal-role-pill--v">\(\vect v_4\)</div>
+          </div>
+        </div>
+
+        <div class="causal-role-explanations">
+          <div><span class="eyebrow blue">query</span><strong>what this position reads</strong><span>\({\color{#3567A9}\mat Q}=\mat X\mat W_Q\)</span></div>
+          <div><span class="eyebrow coral">key</span><strong>how this position is matched</strong><span>\({\color{#C45B50}\mat K}=\mat X\mat W_K\)</span></div>
+          <div><span class="eyebrow green">value</span><strong>what this position can send</strong><span>\({\color{#2D7D67}\mat V}=\mat X\mat W_V\)</span></div>
+        </div>
+        <div class="causal-qkv-takeaway">The prompt is not one query. Every prompt position produces all three vectors in parallel.</div>
+      </div>
+      <div class="slide__number">9</div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide" data-title="Each query can read only itself and the past">
+      <h1 class="slide__title">Each query can read only itself and the past</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content causal-mask-layout">
+        <div class="causal-mask-equation panel">
+          \(\displaystyle \vect q_i\text{ may compare with }\vect k_j\quad\text{only when}\quad j\le i\)
+        </div>
+
+        <div class="causal-mask-grid">
+          <div class="mask-corner">query ↓ · key →</div>
+          <div class="mask-column"><strong>\(\vect k_1\)</strong><span>Sun</span></div>
+          <div class="mask-column"><strong>\(\vect k_2\)</strong><span>rises</span></div>
+          <div class="mask-column"><strong>\(\vect k_3\)</strong><span>in</span></div>
+          <div class="mask-column"><strong>\(\vect k_4\)</strong><span>the</span></div>
+
+          <div class="mask-row"><strong>\(\vect q_1\)</strong><span>Sun</span></div>
+          <div class="mask-cell mask-cell--visible">compare</div>
+          <div class="mask-cell mask-cell--future">future</div>
+          <div class="mask-cell mask-cell--future">future</div>
+          <div class="mask-cell mask-cell--future">future</div>
+
+          <div class="mask-row"><strong>\(\vect q_2\)</strong><span>rises</span></div>
+          <div class="mask-cell mask-cell--visible">compare</div>
+          <div class="mask-cell mask-cell--visible">compare</div>
+          <div class="mask-cell mask-cell--future">future</div>
+          <div class="mask-cell mask-cell--future">future</div>
+
+          <div class="mask-row"><strong>\(\vect q_3\)</strong><span>in</span></div>
+          <div class="mask-cell mask-cell--visible">compare</div>
+          <div class="mask-cell mask-cell--visible">compare</div>
+          <div class="mask-cell mask-cell--visible">compare</div>
+          <div class="mask-cell mask-cell--future">future</div>
+
+          <div class="mask-row mask-row--focus"><strong>\(\vect q_4\)</strong><span>the</span></div>
+          <div class="mask-cell mask-cell--visible mask-cell--focus">compare</div>
+          <div class="mask-cell mask-cell--visible mask-cell--focus">compare</div>
+          <div class="mask-cell mask-cell--visible mask-cell--focus">compare</div>
+          <div class="mask-cell mask-cell--visible mask-cell--focus">compare</div>
+        </div>
+
+        <div class="causal-mask-explanation">
+          <div class="mask-legend-item"><span class="mask-swatch mask-swatch--visible"></span><strong>visible</strong><span>this key may be compared</span></div>
+          <div class="mask-legend-item"><span class="mask-swatch mask-swatch--future"></span><strong>masked</strong><span>future information is unavailable</span></div>
+          <div class="mask-focus-note panel panel--blue">
+            <span class="eyebrow blue">next</span>
+            <strong>Zoom into the last row</strong>
+            <span>\(\vect q_4\) can compare with every key already in the prompt.</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide__number">10</div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide" data-title="The last query is compared with every visible key">
+      <h1 class="slide__title">Compare the last query with every visible key</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content compare-layout">
+        <div class="compare-prompt">
+          <span>Sun</span><span>rises</span><span>in</span><span class="active">the</span>
+        </div>
+        <div class="compare-prompt-caption eyebrow">prompt · position \(4\) will predict the next token</div>
+
+        <div class="compare-equation">
+          <div class="compare-query-block">
+            <div class="eyebrow blue">query from “the”</div>
+            <div class="compare-query panel panel--blue">\(\vect q_4^{\top}\)</div>
+          </div>
+
+          <div class="compare-operator">\(\times\)</div>
+
+          <div class="compare-keys-block">
+            <div class="eyebrow coral">one key from every visible prompt token</div>
+            <div class="compare-key-row compare-bracket">
+              <div><span>Sun</span><strong>\(\vect k_1\)</strong></div>
+              <div><span>rises</span><strong>\(\vect k_2\)</strong></div>
+              <div><span>in</span><strong>\(\vect k_3\)</strong></div>
+              <div><span>the</span><strong>\(\vect k_4\)</strong></div>
+            </div>
+          </div>
+
+          <div class="compare-operator">\(=\)</div>
+
+          <div class="compare-scores-block">
+            <div class="eyebrow mix">one score per token</div>
+            <div class="compare-score-row compare-bracket">
+              <div>\(s_{4,1}\)</div><div>\(s_{4,2}\)</div><div>\(s_{4,3}\)</div><div>\(s_{4,4}\)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compare-score-definition panel">
+          \(\displaystyle s_{4,j}=\frac{\vect q_4^{\top}\vect k_j}{\sqrt{d_k}},\qquad j\le4\)
+        </div>
+        <div class="compare-takeaway">
+          Each dot product is a learned <strong>compatibility score</strong>—not ordinary word correlation. Values are not used yet.
+        </div>
+      </div>
+      <div class="slide__number">11</div>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide" data-title="Softmax turns the scores into attention weights">
+      <h1 class="slide__title">Softmax turns the scores into attention weights</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content causal-weights-layout">
+        <div class="causal-score-formula panel">
+          <span>\(\begin{bmatrix}s_{4,1}&s_{4,2}&s_{4,3}&s_{4,4}\end{bmatrix}\)</span>
+          <span class="causal-score-arrow">\(\xrightarrow{\ \operatorname{softmax}\ }\)</span>
+          <span>\(\begin{bmatrix}a_{4,1}&a_{4,2}&a_{4,3}&a_{4,4}\end{bmatrix}\)</span>
+        </div>
+
+        <div class="causal-weights-caption eyebrow">made-up weights to visualize the arithmetic</div>
+        <div class="causal-weight-grid">
+          <div class="causal-weight-card causal-weight-card--relevant">
+            <div class="causal-weight-token">Sun</div>
+            <div class="causal-weight-key">from \(s_{4,1}\)</div>
+            <div class="causal-weight-number">\(a_{4,1}=0.34\)</div>
+            <div class="causal-weight-bar"><span style="width:34%"></span></div>
+          </div>
+          <div class="causal-weight-card causal-weight-card--relevant">
+            <div class="causal-weight-token">rises</div>
+            <div class="causal-weight-key">from \(s_{4,2}\)</div>
+            <div class="causal-weight-number">\(a_{4,2}=0.34\)</div>
+            <div class="causal-weight-bar"><span style="width:34%"></span></div>
+          </div>
+          <div class="causal-weight-card">
+            <div class="causal-weight-token">in</div>
+            <div class="causal-weight-key">from \(s_{4,3}\)</div>
+            <div class="causal-weight-number">\(a_{4,3}=0.12\)</div>
+            <div class="causal-weight-bar"><span style="width:12%"></span></div>
+          </div>
+          <div class="causal-weight-card">
+            <div class="causal-weight-token">the</div>
+            <div class="causal-weight-key">from \(s_{4,4}\)</div>
+            <div class="causal-weight-number">\(a_{4,4}=0.20\)</div>
+            <div class="causal-weight-bar"><span style="width:20%"></span></div>
+          </div>
+        </div>
+
+        <div class="causal-weights-sum panel panel--mix">
+          \(a_{4,1}+a_{4,2}+a_{4,3}+a_{4,4}=1\)
+        </div>
+        <div class="causal-weights-takeaway">One weight for each visible position; together they sum to \(1\). The values are still untouched.</div>
+      </div>
+      <div class="slide__number">12</div>
+    </section>
+
+    <!-- 13 -->
+    <section class="slide" data-title="The weights mix values from the prompt">
+      <h1 class="slide__title">The weights mix values from the prompt</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content causal-mix-layout">
+        <svg class="connector-layer" viewBox="0 0 1120 582" aria-hidden="true">
+          <defs>
+            <marker id="arrow-mix" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"></path>
+            </marker>
+          </defs>
+          <path d="M158 299 C158 336 446 333 500 368" fill="none" stroke="#8AA8CF" stroke-width="2.4" marker-end="url(#arrow-mix)"></path>
+          <path d="M426 299 C426 329 500 339 540 368" fill="none" stroke="#D08A83" stroke-width="2.4" marker-end="url(#arrow-mix)"></path>
+          <path d="M694 299 C694 329 620 339 580 368" fill="none" stroke="#78AA9B" stroke-width="1.7" marker-end="url(#arrow-mix)"></path>
+          <path d="M962 299 C962 336 674 333 620 368" fill="none" stroke="#A99ABC" stroke-width="1.9" marker-end="url(#arrow-mix)"></path>
+        </svg>
+
+        <div class="causal-mix-formula panel">
+          \(\displaystyle \vect z_4=\sum_{j\le4}a_{4j}\vect v_j\)
+        </div>
+        <div class="causal-mix-caption eyebrow green">the same weights now multiply the values</div>
+
+        <div class="causal-mix-grid above-connectors">
+          <div class="causal-mix-card causal-mix-card--relevant">
+            <div class="causal-mix-token">Sun</div>
+            <div class="causal-mix-term">\(0.34\,{\color{#2D7D67}\vect v_1}\)</div>
+          </div>
+          <div class="causal-mix-card causal-mix-card--relevant">
+            <div class="causal-mix-token">rises</div>
+            <div class="causal-mix-term">\(0.34\,{\color{#2D7D67}\vect v_2}\)</div>
+          </div>
+          <div class="causal-mix-card">
+            <div class="causal-mix-token">in</div>
+            <div class="causal-mix-term">\(0.12\,{\color{#2D7D67}\vect v_3}\)</div>
+          </div>
+          <div class="causal-mix-card">
+            <div class="causal-mix-token">the</div>
+            <div class="causal-mix-term">\(0.20\,{\color{#2D7D67}\vect v_4}\)</div>
+          </div>
+        </div>
+
+        <div class="causal-mix-output panel panel--green above-connectors">
+          <span class="eyebrow green">contextual representation at “the”</span>
+          <span>\(\vect z_4\)</span>
+        </div>
+        <div class="causal-no-future panel">
+          <strong>Important</strong>
+          <span>“east” is not in the prompt, so</span>
+          <span>\(\vect v_{\mathrm{east}}\)</span>
+          <span>does not exist yet.</span>
+        </div>
+      </div>
+      <div class="slide__number">13</div>
+    </section>
+
+    <!-- 14 -->
+    <section class="slide" data-title="Only after attention do we predict the next token">
+      <h1 class="slide__title">Only afterward do we predict the next token</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content causal-predict-layout">
+        <div class="causal-predict-prompt"><span>Sun</span><span>rises</span><span>in</span><span class="active">the</span></div>
+        <div class="causal-predict-prompt-label eyebrow">prompt</div>
+
+        <div class="causal-predict-flow">
+          <div class="causal-predict-stage causal-predict-stage--context panel panel--green">
+            <span class="eyebrow green">final contextual state</span>
+            <span class="causal-predict-math">\(\vect z_4\)</span>
+            <span class="caption">at “the”</span>
+          </div>
+          <div class="causal-predict-arrow">
+            <span class="eyebrow weight">output projection</span>
+            <span class="arrow"></span>
+          </div>
+          <div class="causal-predict-stage panel">
+            <span class="eyebrow weight">vocabulary logits</span>
+            <span class="causal-predict-math">\(\vect z_4^{\top}\mat W_U\)</span>
+            <span class="caption">one score per possible token</span>
+          </div>
+          <div class="causal-predict-arrow causal-predict-arrow--softmax">
+            <span class="eyebrow mix">softmax</span>
+            <span class="arrow"></span>
+          </div>
+          <div class="causal-probabilities panel">
+            <div class="eyebrow">next-token probabilities</div>
+            <div class="causal-probability active"><span>east</span><strong>\(0.72\)</strong></div>
+            <div class="causal-probability"><span>west</span><strong>\(0.06\)</strong></div>
+            <div class="causal-probability"><span>sky</span><strong>\(0.05\)</strong></div>
+            <div class="causal-probability"><span>all others</span><strong>\(0.17\)</strong></div>
+          </div>
+        </div>
+
+        <div class="causal-predict-equation panel">
+          \(\displaystyle p(x_5\mid x_{1:4})=\operatorname{softmax}\!\left(\vect z_4^{\top}\mat W_U\right)\)
+        </div>
+        <div class="causal-predict-takeaway">“east” first appears as a prediction—not as a key or value.</div>
+      </div>
+      <div class="slide__number">14</div>
+    </section>
+
+    <!-- 15 -->
+    <section class="slide" data-title="The left and right matrices in self-attention">
+      <h1 class="slide__title">The left and right matrices in self-attention</h1>
+      <div class="slide__rule"></div>
+      <div class="slide__content formula-layout">
+        <div class="formula-projections panel">
+          <span>\({\color{#3567A9}\mat Q}=\mat X\mat W_Q\)</span>
+          <span>\({\color{#C45B50}\mat K}=\mat X\mat W_K\)</span>
+          <span>\({\color{#2D7D67}\mat V}=\mat X\mat W_V\)</span>
+        </div>
+
+        <div class="formula-flow">
+          <div class="formula-step formula-step--scores">
+            <div class="eyebrow coral">1 · match + mask</div>
+            <div class="formula-step-math">\(\displaystyle \mat S=\frac{{\color{#3567A9}\mat Q}{\color{#C45B50}\mat K}^{\top}}{\sqrt{d_k}}+{\color{#765C99}\mat M_{\mathrm{causal}}}\)</div>
+            <div class="formula-step-copy">Compare queries with keys; hide future positions.</div>
+          </div>
+          <div class="formula-flow-arrow">\(\Longrightarrow\)</div>
+          <div class="formula-step formula-step--weights">
+            <div class="eyebrow mix">2 · normalize</div>
+            <div class="formula-step-math">\(\displaystyle {\color{#B04F72}\mat A}=\operatorname{softmax}_{\mathrm{row}}(\mat S)\)</div>
+            <div class="formula-step-copy">Turn each score row into attention weights.</div>
+          </div>
+          <div class="formula-flow-arrow">\(\Longrightarrow\)</div>
+          <div class="formula-step formula-step--values">
+            <div class="eyebrow green">3 · retrieve</div>
+            <div class="formula-step-math">\(\displaystyle \mat Z={\color{#B04F72}\mat A}{\color{#2D7D67}\mat V}\)</div>
+            <div class="formula-step-copy">Use those weights to mix the values.</div>
+          </div>
+        </div>
+
+        <div class="formula-complete formula-complete--expanded panel">
+          \(\displaystyle
+            \mat Z
+            =
+            \underbrace{
+              \operatorname{softmax}\!\left(
+                \frac{(\mat X\mat W_Q)(\mat X\mat W_K)^{\top}}{\sqrt{d_k}}
+                +\mat M_{\mathrm{causal}}
+              \right)
+            }_{\color{#B04F72}\text{left matrix }\mat A}
+            \mat X
+            \underbrace{\mat W_V}_{\color{#765C99}\text{right matrix}}
+          \)
+        </div>
+        <div class="formula-takeaway formula-takeaway--expanded">
+          <span>\(\mat A\)</span>&nbsp;mixes token rows;&nbsp;<span>\(\mat W_V\)</span>&nbsp;mixes features within each token row.
+        </div>
+      </div>
+      <div class="slide__number">15</div>
+    </section>
+
+  </main>
+
+  <div class="nav-hint">← → navigate</div>
+  <script src="../../shared/slide-system/vendor/katex/katex.min.js"></script>
+  <script src="../../shared/slide-system/vendor/katex/contrib/auto-render.min.js"></script>
+  <script src="../../shared/slide-system/runtime.js"></script>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Convergence of Gradient Descent and SGD</title>
+  <link rel="stylesheet" href="../../shared/slide-system/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="../../shared/slide-system/theme.css">
+  <link rel="stylesheet" href="deck.css">
+</head>
+<body>
+  <main class="deck" data-slide-deck>
+    <section class="slide slide--cover is-active" data-title="Convergence of Gradient Descent and SGD">
+      <div class="cover">
+        <h1>Convergence of Gradient Descent and SGD</h1>
+        <p>Your Name</p>
+      </div>
+      <div class="slide__number">1/15</div>
+    </section>
+
+    <section class="slide" data-title="Optimization setup">
+      <h1 class="slide__title">Optimization setup</h1>
+      <div class="slide__content prose distribution-slide">
+        <p>We minimize a differentiable objective, often written as an empirical average:</p>
+        <div class="equation equation--compact">
+          \[\min_{\vect x\in\mathbb R^d} f(\vect x),
+          \qquad
+          f(\vect x)=\frac1n\sum_{i=1}^n f_i(\vect x),
+          \qquad
+          \vect x^\star\in\operatorname*{arg\,min}_{\vect x}f(\vect x).\]
+        </div>
+
+        <p>Gradient descent uses the full gradient; stochastic gradient descent uses an estimate:</p>
+        <div class="equation equation--compact">
+          \[\text{GD:}\quad \vect x_{t+1}=\vect x_t-\eta_t\nabla f(\vect x_t),\]
+          \[\text{SGD:}\quad \vect x_{t+1}=\vect x_t-\eta_t\vect g_t,
+          \qquad
+          \mathbb E[\vect g_t\mid\vect x_t]=\nabla f(\vect x_t).\]
+        </div>
+
+        <div class="goal-box">
+          <span class="goal-box__label">Goal</span>
+          <p>Choose the step sizes \(\eta_t\) and iteration budget \(T\) so that optimization error is provably small.</p>
+        </div>
+      </div>
+      <div class="slide__number">2/15</div>
+    </section>
+
+    <section class="slide" data-title="Geometry of the objective">
+      <h1 class="slide__title">Geometry of the objective</h1>
+      <div class="slide__content prose losses-slide">
+        <p><strong>\(L\)-smoothness</strong> controls how quickly the gradient can change:</p>
+        <div class="equation equation--compact">
+          \[\|\nabla f(\vect x)-\nabla f(\vect y)\|_2
+          \le L\|\vect x-\vect y\|_2.\]
+        </div>
+
+        <p><strong>\(\mu\)-strong convexity</strong> gives the objective uniform curvature:</p>
+        <div class="equation equation--wide">
+          \[f(\vect y)\ge f(\vect x)
+          +\langle\nabla f(\vect x),\vect y-\vect x\rangle
+          +\frac\mu2\|\vect y-\vect x\|_2^2.\]
+        </div>
+
+        <p>The ratio \(\kappa=L/\mu\ge1\) is the condition number. Large \(\kappa\) means that different directions have very different curvature.</p>
+
+        <p class="conclusion"><strong>Hierarchy</strong> Strong convexity gives geometric convergence; convexity alone generally gives a sublinear rate.</p>
+      </div>
+      <div class="slide__number">3/15</div>
+    </section>
+
+    <section class="slide" data-title="One gradient step decreases the objective">
+      <h1 class="slide__title">One gradient step decreases the objective</h1>
+      <div class="slide__content prose fixed-slide">
+        <p>Let \(\vect x^+=\vect x-\eta\nabla f(\vect x)\) be one gradient-descent step.</p>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Lemma 1</span>
+          <p>If \(f\) is \(L\)-smooth, then</p>
+          <div class="equation equation--compact">
+            \[f(\vect x^+)
+            \le f(\vect x)
+            -\eta\!\left(1-\frac{L\eta}{2}\right)
+            \|\nabla f(\vect x)\|_2^2.\]
+          </div>
+          <p>In particular, every step with \(0&lt;\eta\le1/L\) satisfies</p>
+          <div class="equation equation--compact">
+            \[f(\vect x^+)\le f(\vect x)
+            -\frac\eta2\|\nabla f(\vect x)\|_2^2.\]
+          </div>
+        </div>
+
+        <p class="conclusion"><strong>Meaning</strong> Smoothness turns the gradient norm into a certified amount of progress.</p>
+      </div>
+      <div class="slide__number">4/15</div>
+    </section>
+
+    <section class="slide" data-title="Gradient descent for convex objectives">
+      <h1 class="slide__title">Gradient descent for convex objectives</h1>
+      <div class="slide__content prose bayes-slide">
+        <p>Assume that \(f\) is convex and \(L\)-smooth, and use a constant step size \(0&lt;\eta\le1/L\).</p>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Theorem 1</span>
+          <p>For every \(T\ge1\), gradient descent satisfies</p>
+          <div class="equation equation--compact">
+            \[f(\vect x_T)-f(\vect x^\star)
+            \le\frac{\|\vect x_0-\vect x^\star\|_2^2}{2\eta T}.\]
+          </div>
+        </div>
+
+        <p>With \(\eta=1/L\) and \(R=\|\vect x_0-\vect x^\star\|_2\), it is enough to take</p>
+        <div class="equation equation--small">
+          \[T\ge\frac{LR^2}{2\varepsilon}
+          \qquad\Longrightarrow\qquad
+          f(\vect x_T)-f(\vect x^\star)\le\varepsilon.\]
+        </div>
+
+        <p class="conclusion"><strong>Rate</strong> Smooth convex optimization gives \(f(\vect x_T)-f^\star=\mathcal O(1/T)\).</p>
+      </div>
+      <div class="slide__number">5/15</div>
+    </section>
+
+    <section class="slide" data-title="Strong convexity gives a linear rate">
+      <h1 class="slide__title">Strong convexity gives a linear rate</h1>
+      <div class="slide__content prose overlap-slide">
+        <p>Now suppose that \(f\) is also \(\mu\)-strongly convex and set \(\eta=1/L\).</p>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Theorem 2</span>
+          <p>Gradient descent contracts the objective gap geometrically:</p>
+          <div class="equation equation--compact">
+            \[f(\vect x_T)-f(\vect x^\star)
+            \le\left(1-\frac\mu L\right)^T
+            \bigl(f(\vect x_0)-f(\vect x^\star)\bigr)
+            \le e^{-T/\kappa}\bigl(f(\vect x_0)-f^\star\bigr).\]
+          </div>
+        </div>
+
+        <div class="two-column extremes">
+          <p><strong>Well conditioned.</strong><br>When \(\kappa\approx1\), a small number of full-gradient steps is enough.</p>
+          <p><strong>Ill conditioned.</strong><br>When \(\kappa\gg1\), progress is slow along low-curvature directions.</p>
+        </div>
+
+        <p class="conclusion"><strong>Complexity</strong> Reaching error \(\varepsilon\) takes \(\mathcal O\!\left(\kappa\log(1/\varepsilon)\right)\) iterations.</p>
+      </div>
+      <div class="slide__number">6/15</div>
+    </section>
+
+    <section class="slide" data-title="Stochastic gradients">
+      <h1 class="slide__title">Stochastic gradients</h1>
+      <div class="slide__content prose learning-slide">
+        <p>SGD replaces the full gradient by a conditionally unbiased estimator:</p>
+        <div class="equation equation--uniform">
+          \[\mathbb E[\vect g_t\mid\vect x_t]=\nabla f(\vect x_t),
+          \qquad
+          \mathbb E\!\left[\|\vect g_t-\nabla f(\vect x_t)\|_2^2
+          \mid\vect x_t\right]\le\sigma^2.\]
+        </div>
+
+        <p>The update has a deterministic component and a zero-mean noise component:</p>
+        <div class="equation equation--uniform">
+          \[\vect x_{t+1}=\vect x_t-\eta_t\nabla f(\vect x_t)
+          -\eta_t\underbrace{\bigl(\vect g_t-\nabla f(\vect x_t)\bigr)}_{\text{gradient noise}}.\]
+        </div>
+
+        <p>A mini-batch of size \(b\) reduces the variance of an average of independent gradients:</p>
+        <div class="equation equation--uniform">
+          \[\vect g_t=\frac1b\sum_{j=1}^b\nabla f_{i_{t,j}}(\vect x_t),
+          \qquad
+          \mathbb E\|\vect g_t-\nabla f(\vect x_t)\|_2^2\le\frac{\sigma^2}{b}.\]
+        </div>
+
+        <p class="conclusion"><strong>Trade-off</strong> Small batches make cheap progress; large batches produce a more accurate direction.</p>
+      </div>
+      <div class="slide__number">7/15</div>
+    </section>
+
+    <section class="slide" data-title="The fundamental SGD recursion">
+      <h1 class="slide__title">The fundamental SGD recursion</h1>
+      <div class="slide__content prose retention-slide">
+        <p>Assume that \(f\) is \(L\)-smooth and \(\mu\)-strongly convex. Define</p>
+        <div class="equation equation--compact">
+          \[a_t=\mathbb E\|\vect x_t-\vect x^\star\|_2^2,
+          \qquad
+          c=\frac{2\mu L}{\mu+L}.\]
+        </div>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Proposition 1</span>
+          <p>For an unbiased stochastic gradient with variance at most \(\sigma^2\), every step size \(0&lt;\eta_t\le2/(\mu+L)\) satisfies</p>
+          <div class="equation equation--compact">
+            \[a_{t+1}\le(1-c\eta_t)a_t+\eta_t^2\sigma^2.\]
+          </div>
+        </div>
+
+        <p>The two terms have different roles:</p>
+        <div class="equation equation--compact">
+          \[\underbrace{(1-c\eta_t)a_t}_{\text{contraction toward }\vect x^\star}
+          \quad+\quad
+          \underbrace{\eta_t^2\sigma^2}_{\text{error injected by noise}}.\]
+        </div>
+
+        <p class="conclusion"><strong>Consequence</strong> A useful schedule must preserve contraction while eventually suppressing the noise.</p>
+      </div>
+      <div class="slide__number">8/15</div>
+    </section>
+
+    <section class="slide" data-title="Diminishing steps converge to the optimum">
+      <h1 class="slide__title">Diminishing steps converge to the optimum</h1>
+      <div class="slide__content prose existence-slide">
+        <p>Use the recursion from Proposition 1 and choose</p>
+        <div class="equation equation--small">
+          \[\eta_t=\frac{2}{c(t+t_0)},
+          \qquad
+          t_0\ge\frac{\mu+L}{c},
+          \qquad
+          c=\frac{2\mu L}{\mu+L}.\]
+        </div>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Theorem 3</span>
+          <p>Let</p>
+          <div class="equation equation--compact">
+            \[C=\max\!\left\{t_0a_0,\frac{4\sigma^2}{c^2}\right\}.\]
+          </div>
+          <p>Then the expected squared distance obeys</p>
+          <div class="equation equation--compact">
+            \[\mathbb E\|\vect x_T-\vect x^\star\|_2^2
+            =a_T\le\frac{C}{T+t_0}.\]
+          </div>
+        </div>
+
+        <p class="footnote">The offset \(t_0\) keeps every early step inside the stable range. The \(1/t\) decay balances contraction against stochastic noise.</p>
+
+        <p class="conclusion"><strong>Rate</strong> Diminishing-step SGD reaches the exact optimum at the sublinear rate \(\mathcal O(1/T)\) in squared distance.</p>
+      </div>
+      <div class="slide__number">9/15</div>
+    </section>
+
+    <section class="slide" data-title="Constant steps reach a noise floor">
+      <h1 class="slide__title">Constant steps reach a noise floor</h1>
+      <div class="slide__content prose optimization-slide">
+        <p>Fix \(0&lt;\eta\le2/(\mu+L)\). Iterating the fundamental recursion gives</p>
+        <div class="equation equation--compact">
+          \[a_T\le(1-c\eta)^T a_0
+          +\eta^2\sigma^2\sum_{k=0}^{T-1}(1-c\eta)^k.\]
+        </div>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Proposition 2</span>
+          <p>The geometric sum yields the explicit bound</p>
+          <div class="equation equation--compact">
+            \[a_T\le(1-c\eta)^T a_0+\frac{\eta\sigma^2}{c}.\]
+          </div>
+          <p>Consequently,</p>
+          <div class="equation equation--tiny">
+            \[\limsup_{T\to\infty}
+            \mathbb E\|\vect x_T-\vect x^\star\|_2^2
+            \le\frac{\eta\sigma^2}{c}.\]
+          </div>
+        </div>
+
+        <p class="conclusion"><strong>Consequence</strong> A larger constant step converges faster at first, but settles in a wider neighborhood of the optimum.</p>
+      </div>
+      <div class="slide__number">10/15</div>
+    </section>
+
+    <section class="slide slide--cover" data-title="Appendix">
+      <div class="cover">
+        <h1>Appendix</h1>
+      </div>
+      <div class="slide__number">11/15</div>
+    </section>
+
+    <section class="slide" data-title="Assumptions at a glance">
+      <h1 class="slide__title">Assumptions at a glance</h1>
+      <div class="slide__content prose appendix-recall-slide">
+        <p>The deterministic and stochastic analyses use the same objective geometry:</p>
+        <div class="equation equation--compact">
+          \[\mu\mat I\preceq\nabla^2 f(\vect x)\preceq L\mat I
+          \qquad\text{when the Hessian exists}.\]
+        </div>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Equivalent tools</span>
+          <div class="equation equation--wide">
+            \[\|\nabla f(\vect x)-\nabla f(\vect y)\|_2\le L\|\vect x-\vect y\|_2,\]
+            \[\langle\nabla f(\vect x)-\nabla f(\vect y),\vect x-\vect y\rangle
+            \ge\frac{\mu L}{\mu+L}\|\vect x-\vect y\|_2^2
+            +\frac{1}{\mu+L}\|\nabla f(\vect x)-\nabla f(\vect y)\|_2^2.\]
+          </div>
+        </div>
+
+        <ul class="parameter-list">
+          <li>\(L\) controls the largest stable step; \(\mu\) controls contraction.</li>
+          <li>\(\sigma^2\) measures stochastic-gradient variance; \(b\) is the mini-batch size.</li>
+          <li>\(\kappa=L/\mu\) summarizes conditioning.</li>
+        </ul>
+      </div>
+      <div class="slide__number">12/15</div>
+    </section>
+
+    <section class="slide" data-title="Proof of the descent lemma">
+      <h1 class="slide__title">Proof of the descent lemma</h1>
+      <div class="slide__content prose appendix-decomposition-slide">
+        <p>Smoothness gives a quadratic upper model around \(\vect x\):</p>
+        <div class="equation equation--compact">
+          \[f(\vect y)\le f(\vect x)
+          +\langle\nabla f(\vect x),\vect y-\vect x\rangle
+          +\frac L2\|\vect y-\vect x\|_2^2.\]
+        </div>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Substitute the update</span>
+          <p>Set \(\vect y=\vect x^+=\vect x-\eta\nabla f(\vect x)\). Then</p>
+          <div class="equation equation--compact">
+            \[\langle\nabla f(\vect x),\vect x^+-\vect x\rangle
+            =-\eta\|\nabla f(\vect x)\|_2^2,\]
+            \[\|\vect x^+-\vect x\|_2^2
+            =\eta^2\|\nabla f(\vect x)\|_2^2.\]
+          </div>
+        </div>
+
+        <p>Collecting both terms produces the exact one-step decrease.</p>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Result</span>
+          <div class="equation equation--compact">
+            \[f(\vect x^+)\le f(\vect x)
+            -\eta\left(1-\frac{L\eta}{2}\right)
+            \|\nabla f(\vect x)\|_2^2.\]
+          </div>
+        </div>
+      </div>
+      <div class="slide__number">13/15</div>
+    </section>
+
+    <section class="slide" data-title="Proof of linear convergence">
+      <h1 class="slide__title">Proof of linear convergence</h1>
+      <div class="slide__content prose appendix-projection-slide">
+        <p>Strong convexity implies the Polyak–Łojasiewicz inequality</p>
+        <div class="equation equation--compact">
+          \[\|\nabla f(\vect x)\|_2^2
+          \ge2\mu\bigl(f(\vect x)-f(\vect x^\star)\bigr).\]
+        </div>
+
+        <p class="conclusion"><strong>Combine</strong> With \(\eta=1/L\), the descent lemma gives
+          \(\displaystyle f(\vect x_{t+1})-f^\star
+          \le(1-\mu/L)\bigl(f(\vect x_t)-f^\star\bigr)\).</p>
+
+        <div class="goal-box">
+          <span class="goal-box__label">Iterate</span>
+          <p>Applying the contraction \(T\) times yields
+            \(\displaystyle f(\vect x_T)-f^\star
+            \le(1-1/\kappa)^T\bigl(f(\vect x_0)-f^\star\bigr)\).</p>
+        </div>
+      </div>
+      <div class="slide__number">14/15</div>
+    </section>
+
+    <section class="slide" data-title="What mini-batching changes">
+      <h1 class="slide__title">What mini-batching changes</h1>
+      <div class="slide__content prose appendix-dynamics-slide">
+        <p>Average \(b\) independent stochastic gradients at the same iterate:</p>
+        <div class="equation equation--compact dynamics-objective">
+          \[\vect g_t^{(b)}=\frac1b\sum_{j=1}^b\vect g_{t,j},
+          \qquad
+          \mathbb E\|\vect g_t^{(b)}-\nabla f(\vect x_t)\|_2^2
+          \le\frac{\sigma^2}{b}.\]
+        </div>
+
+        <p>The mean update direction is unchanged:</p>
+        <div class="equation equation--compact">
+          \[\mathbb E[\vect g_t^{(b)}\mid\vect x_t]=\nabla f(\vect x_t).\]
+        </div>
+
+        <p>The fundamental recursion becomes</p>
+        <div class="equation equation--compact">
+          \[a_{t+1}\le(1-c\eta_t)a_t+\frac{\eta_t^2\sigma^2}{b}.\]
+        </div>
+
+        <p>For a constant step size, the limiting term is</p>
+        <div class="equation equation--compact score-expansion">
+          \[\limsup_{T\to\infty}a_T\le\frac{\eta\sigma^2}{bc}.\]
+        </div>
+
+        <div class="proposition-box">
+          <span class="proposition-box__label">Practical message</span>
+          <p>Mini-batching lowers the noise floor by \(1/b\), but each iteration uses \(b\) gradient evaluations. It is most valuable when those evaluations run efficiently in parallel.</p>
+        </div>
+      </div>
+      <div class="slide__number">15/15</div>
+    </section>
+  </main>
+
+  <div class="nav-hint">← → navigate</div>
+  <script src="../../shared/slide-system/vendor/katex/katex.min.js"></script>
+  <script src="../../shared/slide-system/vendor/katex/contrib/auto-render.min.js"></script>
+  <script src="../../shared/slide-system/runtime.js"></script>
+</body>
+</html>

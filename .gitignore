@@ -1,0 +1,23 @@
+# Private material kept locally and never published
+.private/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Temporary build directories. Final poster and slide PDFs are intentionally
+# committed next to their source files.
+dist/
+build/
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*~

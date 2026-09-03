@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Academic poster and slide template overview</title>
+  <desc id="desc">A portrait research poster beside mathematical and visual teaching slides.</desc>
+  <rect width="1200" height="520" rx="24" fill="#f3f0e9"/>
+  <g transform="translate(72 54)">
+    <rect width="260" height="412" rx="5" fill="#fff" stroke="#d7dce5"/>
+    <rect width="260" height="11" rx="5" fill="#203d66"/>
+    <rect x="17" y="30" width="174" height="17" rx="3" fill="#203d66"/>
+    <rect x="17" y="57" width="121" height="6" rx="3" fill="#c8664f"/>
+    <rect x="17" y="79" width="226" height="31" rx="4" fill="#203d66"/>
+    <g fill="#f7f4ed" stroke="#e4ded1">
+      <rect x="17" y="126" width="68" height="248" rx="3"/>
+      <rect x="96" y="126" width="68" height="248" rx="3"/>
+      <rect x="175" y="126" width="68" height="248" rx="3"/>
+    </g>
+    <g fill="#dce6f1">
+      <rect x="25" y="140" width="52" height="6" rx="2"/>
+      <rect x="104" y="140" width="52" height="6" rx="2"/>
+      <rect x="183" y="140" width="52" height="6" rx="2"/>
+    </g>
+  </g>
+  <g transform="translate(390 75)">
+    <rect width="738" height="326" rx="8" fill="#fff" stroke="#d7dce5"/>
+    <rect x="42" y="37" width="330" height="18" rx="3" fill="#172033"/>
+    <rect x="42" y="69" width="654" height="2" fill="#dfe3ea"/>
+    <rect x="108" y="113" width="522" height="104" rx="4" fill="#fbfdff" stroke="#9eb2ca"/>
+    <rect x="132" y="135" width="93" height="7" rx="2" fill="#31577d"/>
+    <rect x="165" y="165" width="408" height="12" rx="3" fill="#253145"/>
+    <rect x="193" y="189" width="352" height="7" rx="3" fill="#727b8b"/>
+    <rect x="174" y="252" width="390" height="42" rx="4" fill="#f4f7fa" stroke="#a8b9cb"/>
+  </g>
+  <g transform="translate(475 340)">
+    <rect width="585" height="132" rx="8" fill="#fff" stroke="#d7dce5"/>
+    <g transform="translate(26 31)">
+      <rect width="154" height="73" rx="7" fill="#f4f8fd" stroke="#8dadd5"/>
+      <rect x="190" width="154" height="73" rx="7" fill="#fff7f4" stroke="#d99a8c"/>
+      <rect x="380" width="154" height="73" rx="7" fill="#f2f9f6" stroke="#86b7a8"/>
+      <rect x="35" y="17" width="84" height="7" rx="2" fill="#3b6fb6"/>
+      <rect x="225" y="17" width="84" height="7" rx="2" fill="#c8664f"/>
+      <rect x="415" y="17" width="84" height="7" rx="2" fill="#2f816b"/>
+      <rect x="20" y="41" width="114" height="5" rx="2" fill="#aab3c1"/>
+      <rect x="210" y="41" width="114" height="5" rx="2" fill="#aab3c1"/>
+      <rect x="400" y="41" width="114" height="5" rx="2" fill="#aab3c1"/>
+    </g>
+  </g>
+</svg>
