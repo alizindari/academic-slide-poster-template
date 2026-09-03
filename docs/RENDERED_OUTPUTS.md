@@ -11,6 +11,7 @@ Every poster or slide source has a committed PDF beside it. Regenerate the compl
 | `templates/poster/index.html` | `templates/poster/poster.pdf` |
 | `templates/slides-math/index.html` | `templates/slides-math/slides.pdf` |
 | `examples/poster-disel/index.html` | `examples/poster-disel/poster.pdf` |
+| `examples/poster-lora/index.html` | `examples/poster-lora/poster.pdf` |
 | `templates/slides-transformer/index.html` | `templates/slides-transformer/slides.pdf` |
 
 The HTML slide renderer requires a Chromium-based browser and `pdfunite` from

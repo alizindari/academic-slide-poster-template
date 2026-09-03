@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LoRA vs. Full Fine-Tuning: A Theoretical Perspective</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- MathJax 3 CHTML, using the same Computer Modern style as the DISeL poster -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+    packages: {'[+]': ['ams', 'color', 'boldsymbol']},
+    macros: {
+      x: '\\mathbf{x}',
+      y: '\\mathbf{y}',
+      X: '\\mathbf{X}',
+      Y: '\\mathbf{Y}',
+      A: '\\mathbf{A}',
+      Astar: '\\mathbf{A}^{\\star}',
+      A0: '\\mathbf{A}_{0}',
+      Afft: '\\widehat{\\mathbf{A}}_{\\mathrm{FFT}}',
+      Alora: '\\widehat{\\mathbf{A}}_{\\mathrm{LoRA}}',
+      D: '\\boldsymbol{\\Delta}',
+      Dstar: '\\boldsymbol{\\Delta}^{\\star}',
+      Dfft: '\\widehat{\\boldsymbol{\\Delta}}_{\\mathrm{FFT}}',
+      Dlora: '\\widehat{\\boldsymbol{\\Delta}}_{\\mathrm{LoRA}}',
+      Sxx: '\\boldsymbol{\\Sigma}_{\\mathbf{xx}}',
+      Sxxh: '\\widehat{\\boldsymbol{\\Sigma}}_{\\mathbf{xx}}',
+      See: '\\boldsymbol{\\Sigma}_{\\boldsymbol{\\varepsilon\\varepsilon}}',
+      eps: '\\boldsymbol{\\varepsilon}',
+      Pxp: '\\mathbf{P}_{\\mathbf{X}}^{\\perp}',
+      Rb: '\\mathbb{R}',
+      E: '\\mathbb{E}',
+      N: '\\mathcal{N}',
+      Rc: '\\mathcal{R}',
+      Dc: '\\mathcal{D}',
+      Tr: '\\operatorname{Tr}',
+      trunc: '\\operatorname{trunc}',
+      lmax: '\\lambda_{\\max}',
+      lmin: '\\lambda_{\\min}',
+      sbar: '\\bar{\\sigma}_{\\eps}^{2}'
+    }
+  },
+  loader: { load: ['[tex]/ams', '[tex]/color', '[tex]/boldsymbol'] },
+  chtml: {
+    fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2',
+    matchFontHeight: false,
+    mtextInheritFont: false,
+    scale: 1.0
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+
+<div class="poster">
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="header">
+    <div class="title-block">
+      <h1>
+        LoRA vs.&nbsp;Full Fine-Tuning
+        <span class="sub">A Theoretical Perspective on Generalization</span>
+      </h1>
+      <div class="authors">
+        Ali Zindari<sup>∗,1,2</sup> &nbsp; Rotem Mulayoff<sup>∗,2</sup> &nbsp;
+        Sebastian U. Stich<sup>2</sup>
+      </div>
+      <div class="affil">
+        <sup>1</sup>Universität des Saarlandes &nbsp;·&nbsp;
+        <sup>2</sup>CISPA Helmholtz Center for Information Security, Saarbrücken, Germany &nbsp;·&nbsp;
+        <em><sup>∗</sup> equal contribution</em>
+      </div>
+      <div class="code">
+        <span class="label">contact</span> &nbsp;{ali.zindari, rotem.mulayoff, stich}@cispa.de
+      </div>
+    </div>
+    <div class="header-side">
+      <img class="cispa-logo" src="figures/svg/cispa_logo.svg" alt="CISPA Helmholtz Center for Information Security">
+      <div class="tag-row">
+        <span class="tag-pill">LoRA</span>
+        <span class="tag-pill alt">Generalization</span>
+        <span class="tag-pill outline">Theory</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       TL;DR
+       ============================================================ -->
+  <section class="tldr">
+    <div class="tag">TL;DR</div>
+    <div class="body">
+      We derive <strong>excess-risk bounds</strong> for LoRA and Full FT in linear regression.
+      In both the over- and under-determined regimes, LoRA reduces variance from
+      $\Theta(d_x d_y/n)$ to $\mathcal{O}(r\max\{d_x,d_y\}/n)$.
+      When the task shift $\Dstar$ is effectively <strong>low-rank</strong>, LoRA
+      <strong>strictly outperforms</strong> FFT; the gap is largest in
+      <em>high-noise / few-sample</em> regimes. Qwen2.5 fine-tuning experiments confirm the linear theory.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       THREE-COLUMN BODY
+       ============================================================ -->
+  <main class="columns">
+
+    <!-- =====================================================
+         COLUMN 1: Setup
+         ===================================================== -->
+    <div class="col">
+
+      <section class="card">
+        <h2><span class="num">1</span>Problem setup</h2>
+        <p>
+          Linear regression with $n$ i.i.d.&nbsp;samples
+          $\mathcal{D}=\{(\x_i,\y_i)\}_{i=1}^n$:
+        </p>
+        <div class="eqbox method">
+          $$\y_i \,=\, \Astar\,\x_i + \eps_i, \quad \eps_i\sim\N(\mathbf{0},\See),
+            \quad \Dstar := \Astar - \A_0.$$
+        </div>
+        <p>Stacking samples as columns gives the data matrices:</p>
+        <div class="eqbox">
+          $$\X \,=\, [\x_1,\ldots,\x_n] \in \Rb^{d_x\times n},
+            \qquad \Y \,=\, [\y_1,\ldots,\y_n] \in \Rb^{d_y\times n}.$$
+        </div>
+        <p>
+          Both methods solve $\min_{\A}\|\A\X-\Y\|_{\rm F}^{2}$. They differ only in
+          the constraint on $\A$, and we always pick the <em>min-norm</em> solution.
+        </p>
+
+        <h3>FFT (min-norm)</h3>
+        <div class="eqbox method">
+          $$\Afft \;=\; \A_0 + \Dfft, \qquad \Dfft \,:=\, (\Y - \A_0\X)\,\X^{\dagger}.$$
+        </div>
+
+        <h3>LoRA (rank-$r$, Sondermann)</h3>
+        <div class="eqbox method">
+          $$\Alora \;=\; \A_0 + \trunc_r\!\bigl\{\Dfft\,\Sxxh^{1/2}\bigr\}\bigl(\Sxxh^{1/2}\bigr)^{\!\dagger}.$$
+        </div>
+        <p>
+          LoRA's update is the FFT update <em>projected onto its top-$r$ singular components</em>
+          in the data geometry, then mapped back. Both estimators have closed form;
+          we study their <em>expected excess risk</em>.
+        </p>
+        <div class="thmbox lemma">
+          <div class="thmhead">Lemma 5&nbsp;&nbsp;(Excess-risk identity)</div>
+          <div class="thmbody">
+            $$\Rc(\widehat{\A}) - \Rc(\Astar) \,=\, \bigl\|(\widehat{\A}-\Astar)\,\Sxx^{1/2}\bigr\|_{\rm F}^{2}.$$
+          </div>
+        </div>
+      </section>
+
+      <section class="card accent">
+        <h2><span class="num">2</span>Overdetermined regime $\;n \ge d_x$</h2>
+
+        <div class="thmbox">
+          <div class="thmhead">Theorem 1&nbsp;&nbsp;(FFT excess risk)</div>
+          <div class="thmbody">
+            $$\begin{aligned}
+              &\E\bigl[\Rc(\Afft)\bigr] - \Rc(\Astar) \\[1pt]
+              &\qquad =\, \tfrac{1}{n}\Tr(\See)\,\E\!\bigl[\Tr(\Sxx\,\Sxxh^{-1})\bigr] \\
+              &\qquad \ge\, \bar\sigma_{\eps}^{2}\,\dfrac{d_x d_y}{n},
+              \quad \bar\sigma_{\eps}^{2} := \tfrac{1}{d_y}\,\E[\|\eps\|^{2}].
+            \end{aligned}$$
+          </div>
+        </div>
+        <p>
+          When $n\!\ge\!d_x$, FFT coincides with OLS: it does not depend on $\A_0$
+          and is <em>unbiased</em>. The bound scales as $\Omega(d_x d_y/n)$ and blows up
+          at the interpolation threshold $n\!\to\!d_x$.
+        </p>
+
+        <div class="thmbox prop">
+          <div class="thmhead">Proposition 3&nbsp;&nbsp;(Gaussian case, FFT)</div>
+          <div class="thmbody">
+            <p>If $\x_i \sim \mathcal{N}(\mathbf{0}, \Sxx)$ i.i.d.&nbsp;and $\See \succeq \mathbf{0}$:</p>
+            $$\E\bigl[\Rc(\Afft)\bigr] - \Rc(\Astar) \,=\, \Tr(\See)\,\dfrac{d_x}{n-d_x-1}.$$
+          </div>
+        </div>
+
+        <div class="thmbox">
+          <div class="thmhead">Theorem 2&nbsp;&nbsp;(LoRA excess risk)</div>
+          <div class="thmbody">
+            $$\begin{aligned}
+              &\E\bigl[\Rc(\Alora)\bigr] - \Rc(\Astar) \;\lesssim\; \\[1pt]
+              &\qquad\qquad \dfrac{r\max\{d_x,d_y\}}{n}\,\lmax(\See)\,\E\!\bigl[\lmax(\Sxx\Sxxh^{-1})\bigr] \\
+              &\qquad\qquad +\, \lmax(\Sxx)\!\left(r\sigma_{r+1}^{2}(\Dstar) + \!\!\sum_{i\gt r}^{\min\{d_x,d_y\}}\!\!\sigma_{i}^{2}(\Dstar)\right) \\
+              &\qquad\qquad +\, r\sigma_{r+1}^{2}(\Dstar)\,\E\!\bigl[\lmax(\Sxxh)\lmax(\Sxx\Sxxh^{-1})\bigr].
+            \end{aligned}$$
+          </div>
+        </div>
+        <p>
+          The first term is LoRA's <em>variance</em>. The remaining two terms are the
+          <em>bias</em> incurred by the rank-$r$ truncation: this error is <em>inevitable</em>,
+          since any rank-$r$ adaptation must misfit the spectral tail of $\Dstar$
+          (terms involving $\sigma_{r+1}(\Dstar)$ and $\sum_{i>r}\sigma_{i}^{2}(\Dstar)$).
+          The bias is small exactly when $\Dstar$ has rapidly decaying singular values.
+        </p>
+
+        <div class="thmbox prop">
+          <div class="thmhead">Proposition 4&nbsp;&nbsp;(asymptotic LoRA variance)</div>
+          <div class="thmbody">
+            <p>Under the Gaussian setting of Prop. 3, the variance term in Thm.&nbsp;2 is
+            asymptotically equivalent to</p>
+            $$r\max\{d_x,d_y\}\bigl(\sqrt{n}-\sqrt{d_x}\bigr)^{-2}\lmax(\See).$$
+          </div>
+        </div>
+        <p>
+          Far from the interpolation threshold ($n\!\gg\!d_x$), with bounded $\lmax(\See)$ but
+          non-vanishing $\bar\sigma_{\eps}^{2}$ (e.g.&nbsp;isotropic noise), this is
+          $\mathcal{O}(r\max\{d_x,d_y\}/n)$, versus FFT's $\Omega(d_x d_y/n)$.
+          Since $r$ is typically much smaller than $\min\{d_x,d_y\}$, LoRA achieves a
+          <em>substantial reduction in variance</em>.
+        </p>
+
+        <div class="thmbox cor">
+          <div class="thmhead">Corollary 1&nbsp;&nbsp;(low-rank shift)</div>
+          <div class="thmbody">
+            <p>If $\mathrm{rank}(\Dstar)\le r$:</p>
+            $$\begin{aligned}
+              &\E\bigl[\Rc(\Alora)\bigr] - \Rc(\Astar) \;\lesssim\; \\[1pt]
+              &\qquad\qquad \dfrac{r\max\{d_x,d_y\}}{n}\,\lmax(\See)\,\E\!\bigl[\lmax(\Sxx\Sxxh^{-1})\bigr].
+            \end{aligned}$$
+          </div>
+        </div>
+        <p>
+          <strong class="key">Bias-variance tradeoff.</strong> As $r$ grows, the truncation bias
+          decreases but the variance grows linearly in $r$. When the spectrum of $\Dstar$ decays
+          fast, even a small $r$ pays a tiny bias and reaps the full variance reduction.
+          When the spectrum is flat, no $r\!<\!\min\{d_x,d_y\}$ can compete with FFT.
+          In modern LLMs the spectrum is heavily concentrated in a few leading directions,
+          making the low-rank assumption mild.
+        </p>
+        <div class="callout">
+          <strong>FFT vs.&nbsp;LoRA.</strong> $\Theta(d_x d_y/n)$ vs.&nbsp;$\mathcal{O}(r\max\{d_x,d_y\}/n)$:
+          when $r\ll\min\{d_x,d_y\}$, LoRA achieves a <em>substantial variance reduction</em>.
+        </div>
+      </section>
+
+    </div><!-- /col 1 -->
+
+
+    <!-- =====================================================
+         COLUMN 2: Underdetermined regime + linear experiment
+         ===================================================== -->
+    <div class="col">
+
+      <section class="card accent">
+        <h2><span class="num">3</span>Underdetermined regime $\;n < d_x$</h2>
+
+        <div class="thmbox">
+          <div class="thmhead">Theorem 3&nbsp;&nbsp;(FFT excess risk)</div>
+          <div class="thmbody">
+            $$\begin{aligned}
+              &\E\bigl[\Rc(\Afft)\bigr] - \Rc(\Astar) \;=\; \\[1pt]
+              &\qquad \underbrace{\E\!\bigl[\|\Dstar\Pxp\Sxx^{1/2}\|_{\rm F}^{2}\bigr]}_{\text{FFT Bias}}
+              \;+\; \underbrace{\tfrac{1}{n}\Tr(\See)\,\E\!\bigl[\Tr(\Sxx\Sxxh^{\dagger})\bigr]}_{\text{FFT Variance}}.
+            \end{aligned}$$
+          </div>
+        </div>
+
+        <div class="thmbox prop">
+          <div class="thmhead">Prop. 5&nbsp;&nbsp;(Gaussian case, FFT)</div>
+          <div class="thmbody">
+            $$\text{Bias}\,=\,\|\Dstar\|_{\rm F}^{2}\,\frac{d_x-n}{d_x},\quad
+              \text{Variance}\,=\,\Tr(\See)\,\frac{n}{d_x-n-1}.$$
+          </div>
+        </div>
+        <p>
+          FFT is now <em>biased</em>: the data only constrain $\A$ in the row space of $\X$,
+          and the rest of $\Dstar$ leaks into the risk. Bias decreases linearly with $n$,
+          while variance grows with $n$; they balance near $n\!\to\!d_x$.
+        </p>
+
+        <div class="thmbox">
+          <div class="thmhead">Theorem 4&nbsp;&nbsp;(LoRA excess risk)</div>
+          <div class="thmbody">
+            $$\begin{aligned}
+              &\E\bigl[\Rc(\Alora)\bigr] - \Rc(\Astar) \;\lesssim\; \\[1pt]
+              &\qquad\qquad \E\!\bigl[\|\Dstar\Pxp\Sxx^{1/2}\|_{\rm F}^{2}\bigr] \\
+              &\qquad\qquad +\, \dfrac{r\max\{n,d_y\}}{n}\,\lmax(\See)\,\E\!\bigl[\lmax(\Sxx\Sxxh^{\dagger})\bigr] \\
+              &\qquad\qquad +\, \lmax(\Sxx)\!\left(r\sigma_{r+1}^{2}(\Dstar) + \!\!\sum_{i\gt r}^{\min\{n,d_y\}}\!\!\sigma_{i}^{2}(\Dstar)\right) \\
+              &\qquad\qquad +\, r\sigma_{r+1}^{2}(\Dstar)\,\E\!\bigl[\lmax(\Sxxh)\lmax(\Sxx\Sxxh^{\dagger})\bigr].
+            \end{aligned}$$
+          </div>
+        </div>
+
+        <p>
+          The first term is the <em>same</em> bias as FFT (Thm.&nbsp;3). The last two are
+          truncation error from the rank-$r$ constraint, which vanish if
+          $\mathrm{rank}(\Dstar)\!\le\!r$.
+        </p>
+
+        <div class="thmbox prop">
+          <div class="thmhead">Proposition 6&nbsp;&nbsp;(asymptotic LoRA variance)</div>
+          <div class="thmbody">
+            <p>Assume $d_x > n+1$, $\x_i \sim \mathcal{N}(\mathbf{0}, \sigma_x^{2}\mathbf{I})$ i.i.d., and $\See\succeq\mathbf{0}$. The variance term in Thm.&nbsp;4 is asymptotically equivalent to</p>
+            $$r\max\{n,d_y\}\bigl(\sqrt{d_x}-\sqrt{n}\bigr)^{-2}\lmax(\See).$$
+          </div>
+        </div>
+
+        <div class="thmbox cor">
+          <div class="thmhead">Corollary 2&nbsp;&nbsp;(low-rank shift)</div>
+          <div class="thmbody">
+            <p>If $\mathrm{rank}(\Dstar)\le r\lt n$:</p>
+            $$\begin{aligned}
+              &\E\bigl[\Rc(\Alora)\bigr] - \Rc(\Astar) \;\lesssim\;
+                \E\!\bigl[\|\Dstar\Pxp\Sxx^{1/2}\|_{\rm F}^{2}\bigr] \\
+              &\quad +\, \dfrac{r\max\{n,d_y\}}{n}\,\lmax(\See)\,\E\!\bigl[\lmax(\Sxx\Sxxh^{\dagger})\bigr].
+            \end{aligned}$$
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Bias parity, variance gain.</strong>
+          LoRA inherits FFT's bias <em>exactly</em>, but enjoys the $r/\min\{d_x,d_y\}$ variance reduction.
+          When $\Dstar$'s spectrum decays fast, LoRA Pareto-dominates FFT in <em>both</em> regimes.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">4</span>Linear regression experiment</h2>
+        <p>
+          Isotropic Gaussian features; $\Dstar = \tfrac{1}{\sqrt{r^\star}}\,\mathbf{U}\mathbf{V}$
+          with Gaussian $\mathbf{U},\mathbf{V}$. 100 seeds; shaded $\pm 1$ s.d.
+        </p>
+        <div class="fig stack-fig">
+          <img src="figures/svg/dimension_sweep_log.svg" alt="Excess risk vs dimension-to-sample ratio">
+        </div>
+        <div class="fig stack-fig">
+          <img src="figures/svg/noise_sweep_log.svg" alt="Excess risk vs noise level">
+          <div class="cap">
+            <b>Fig. 1.</b> <em>Top:</em> excess risk vs.&nbsp;$d_x/n$ with $r^\star=4$.
+            <em>Bottom:</em> excess risk vs.&nbsp;noise $\sigma\!\in\![1,100]$,
+            $d_x\!=\!d_y\!=\!100$, $n\!=\!50$, $r^\star\!=\!10$.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">$r\ge r^\star$</strong>: LoRA beats FFT at every $d_x/n$; the optimum is $r=r^\star$.</li>
+          <li><strong class="key">$r\lt r^\star$</strong>: rank-bias dominates and LoRA can hurt; risk is nearly flat in $d_x/n$.</li>
+          <li><strong class="key">High noise</strong>: FFT explodes with $\sigma$; low-rank LoRA stays bounded.</li>
+          <li><strong class="key">Interpolation peak</strong> at $d_x/n\!=\!1$ matches the $\sqrt{n}\!-\!\sqrt{d_x}$ scaling of Props.&nbsp;4 and&nbsp;6.</li>
+        </ul>
+      </section>
+
+    </div><!-- /col 2 -->
+
+
+    <!-- =====================================================
+         COLUMN 3: LLM experiments + Takeaways
+         ===================================================== -->
+    <div class="col">
+
+      <section class="card gold">
+        <h2><span class="num">5</span>LLM experiment: label noise</h2>
+        <p>
+          Qwen2.5-0.5B fine-tuned with various ranks on
+          <em>BoolQ</em> &amp; <em>CommonsenseQA</em>; 3 seeds.
+          The noise level controls the variance term in our excess-risk bounds:
+          larger $\Tr(\See)$ means the variance gap between FFT and LoRA dominates.
+        </p>
+        <div class="fig stack-fig">
+          <img src="figures/svg/Qwen2.5_0.5B_noise_boolq.svg" alt="BoolQ label noise">
+        </div>
+        <div class="fig stack-fig">
+          <img src="figures/svg/Qwen2.5_0.5B_CommonsenseQA_noise.svg" alt="CommonsenseQA label noise">
+          <div class="cap">
+            <b>Fig. 2.</b> Test accuracy vs.&nbsp;label noise on <em>BoolQ</em> (top) and
+            <em>CommonsenseQA</em> (bottom). Strong-noise regime: LoRA outperforms Full FT (Cor.&nbsp;1).
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">Weak noise.</strong> No consistent rank ordering: a moderate $r$ is optimal, the classical bias/variance tradeoff.</li>
+          <li><strong class="key">Strong noise.</strong> Test accuracy decreases <em>monotonically</em> with $r$. Restricting the number of trainable directions improves generalization.</li>
+          <li><strong class="key">Why?</strong> Variance dominates the excess risk and LoRA scales it down by $r/\min\{d_x,d_y\}$ exactly as Cor.&nbsp;1 predicts.</li>
+        </ul>
+        <p>
+          <strong class="key">Two regimes (theory).</strong>
+          When $\Tr(\See)\!\gg\!\|\Dstar\|_{\rm F}^{2}$ the variance term dominates the bias and
+          adding samples can hurt. When $\Tr(\See)\!\ll\!\|\Dstar\|_{\rm F}^{2}$ the bias governs
+          the risk. The plots above span both regimes.
+        </p>
+      </section>
+
+      <section class="card gold">
+        <h2><span class="num">6</span>LLM experiment: sample size &amp; spectrum</h2>
+        <p>
+          Qwen2.5-1.5B with various LoRA ranks across training-set sizes.
+          Lower panels: normalized cumulative spectral energy of the estimated $\Dstar$.
+        </p>
+        <div class="fig-grid-2">
+          <div class="fig">
+            <img src="figures/svg/Qwen2.5_1.5B_sweep_boolq.svg" alt="BoolQ sample size">
+          </div>
+          <div class="fig">
+            <img src="figures/svg/Qwen2.5_1.5B_sweep_commonsense.svg" alt="CommonsenseQA sample size">
+          </div>
+        </div>
+        <div class="fig-grid-2">
+          <div class="fig">
+            <img src="figures/svg/spectral_boolq.svg" alt="BoolQ spectral energy">
+          </div>
+          <div class="fig">
+            <img src="figures/svg/spectral_commonsense.svg" alt="CommonsenseQA spectral energy">
+          </div>
+        </div>
+        <div class="fig">
+          <div class="cap">
+            <b>Fig. 3.</b> Top: accuracy vs.&nbsp;$n$. Bottom: cumulative spectral energy of $\Dstar$.
+            <em>BoolQ</em> (left): heavier tail. <em>CommonsenseQA</em> (right): rapid decay
+            $\Rightarrow$ $\Dstar$ effectively low-rank.
+          </div>
+        </div>
+        <ul>
+          <li><strong class="key">CommonsenseQA.</strong> Rapid spectral decay, so $\Dstar$ is effectively low-rank, and LoRA <em>significantly</em> outperforms FFT.</li>
+          <li><strong class="key">BoolQ.</strong> Heavy spectral tail, so $\Dstar$ is poorly approximated by rank $r$, and LoRA matches FFT but does not beat it.</li>
+          <li><strong class="key">Spectral decay = practical knob.</strong> The cumulative-energy curve of an estimated $\Dstar$ is a cheap diagnostic for when LoRA will help.</li>
+          <li><strong class="key">Confirmation across model sizes.</strong> The qualitative trends in Figs.&nbsp;2 and&nbsp;3 reproduce on Qwen2.5-0.5B / 1.5B / 3B (App. VI), supporting the linear theory.</li>
+        </ul>
+      </section>
+
+      <section class="takeaways">
+        <h2><span class="num">★</span>Takeaways</h2>
+        <ul>
+          <li>First <strong class="key">excess-risk analysis of LoRA</strong> covering both over- and under-determined regimes.</li>
+          <li>FFT $\Theta(d_x d_y/n)$ vs.&nbsp;LoRA $\mathcal{O}(r\max\{d_x,d_y\}/n)$: variance reduced by $r/\min\{d_x,d_y\}$.</li>
+          <li>LoRA <strong class="key">strictly outperforms FFT</strong> when $\Dstar$ is effectively low-rank; gap grows in high-noise / few-sample regimes.</li>
+          <li>Qwen2.5 experiments match the linear theory: label noise &amp; spectral decay decide the winner.</li>
+        </ul>
+      </section>
+
+    </div><!-- /col 3 -->
+
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <div class="left">
+      Universität des Saarlandes &nbsp;·&nbsp; CISPA Helmholtz Center for Information Security
+    </div>
+    <div class="center">{ali.zindari, rotem.mulayoff, stich}@cispa.de</div>
+    <div class="right">Funded by the Helmholtz Association &amp; ERC HORIZON #101170430 CollectiveMinds</div>
+  </footer>
+
+</div><!-- /poster -->
+
+</body>
+</html>

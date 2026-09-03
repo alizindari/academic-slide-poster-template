@@ -4,8 +4,9 @@
 
 ### Beautiful, reproducible research communication, built with the web.
 
-One polished academic poster and two distinct presentation styles for two very
-different rooms: focused technical discussions and visual teaching.
+One polished academic poster template, two complete poster examples, and two
+distinct presentation styles for focused technical discussions and visual
+teaching.
 
 [![HTML](https://img.shields.io/badge/HTML5-source-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS](https://img.shields.io/badge/CSS3-design-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
@@ -33,7 +34,14 @@ full PDF.
       </a>
       <br>
       <strong>Academic poster</strong><br>
-      <sub>Dense research, clear hierarchy</sub>
+      <sub>DISeL: dense research, clear hierarchy</sub>
+      <br><br>
+      <a href="examples/poster-lora/poster.pdf">
+        <img src="docs/assets/previews/poster-lora.png" alt="Rendered LoRA versus Full Fine-Tuning academic poster with theoretical bounds and experimental figures" width="100%">
+      </a>
+      <br>
+      <strong>Academic poster</strong><br>
+      <sub>LoRA vs. Full Fine-Tuning: theory and experiments</sub>
     </td>
     <td width="66%" align="center" valign="top">
       <a href="templates/slides-math/slides.pdf">
@@ -88,7 +96,7 @@ workshops, and so on. Again, use it however you wish.
 
 | Format | Character | Best suited for | Open it |
 | --- | --- | --- | --- |
-| **Academic poster** | Editorial, structured, and print-ready | Conference posters, workshops, research showcases, machine-learning and technical projects | [Source](templates/poster/index.html) · [Blank PDF](templates/poster/poster.pdf) · [Complete example](examples/poster-disel/index.html) · [Example PDF](examples/poster-disel/poster.pdf) |
+| **Academic poster** | Editorial, structured, and print-ready | Conference posters, workshops, research showcases, machine-learning and technical projects | [Source](templates/poster/index.html) · [Blank PDF](templates/poster/poster.pdf) · [DISeL example](examples/poster-disel/index.html) · [PDF](examples/poster-disel/poster.pdf) · [LoRA example](examples/poster-lora/index.html) · [PDF](examples/poster-lora/poster.pdf) |
 | **Elegant mathematical slides** | Quiet, precise, and theorem-oriented | Professional technical talks, research seminars, meetings with colleagues, and discussions with collaborators | [Source](templates/slides-math/index.html) · [PDF](templates/slides-math/slides.pdf) |
 | **Visual transformer slides** | Colorful, diagram-rich, and progressive | Courses, tutorials, lectures, student audiences, and general technical explanations | [Source](templates/slides-transformer/index.html) · [PDF](templates/slides-transformer/slides.pdf) |
 
@@ -100,10 +108,12 @@ theorem and equation callouts, figure panels, takeaways, affiliations, and room
 for project links. It works well for machine-learning conferences, scientific
 workshops, lab presentations, and technical project exhibitions.
 
-The blank version is ready to adapt, while the included DISeL poster shows how
-the system behaves with dense mathematics, plots, diagrams, and experimental
-results. The visual hierarchy stays readable even when the content is serious
-and information-heavy.
+The blank version is ready to adapt. Two complete examples show how the same
+system handles different research stories: the DISeL poster combines dense
+mathematics, plots, diagrams, and experimental results, while the LoRA versus
+Full Fine-Tuning poster emphasizes theorem statements, excess-risk bounds, and
+the link between theory and language-model experiments. The visual hierarchy
+stays readable even when the content is serious and information-heavy.
 
 ### The elegant mathematical deck
 
@@ -272,7 +282,8 @@ The complete source-to-output list is maintained in
 │   ├── slides-math/                  # Elegant mathematical deck
 │   └── slides-transformer/           # Populated visual transformer deck
 ├── examples/
-│   └── poster-disel/                 # Complete research-poster example
+│   ├── poster-disel/                 # Complete DISeL poster example
+│   └── poster-lora/                  # Complete LoRA theory poster example
 ├── shared/slide-system/              # Runtime, print CSS, fonts, and KaTeX
 ├── docs/
 │   ├── assets/                       # README artwork and rendered previews
