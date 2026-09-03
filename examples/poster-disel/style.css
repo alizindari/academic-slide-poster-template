@@ -1,5 +1,5 @@
 /* =========================================================
-   DISeL — Times-set poster (86 × 116 cm, portrait)
+   DISeL: Times-set poster (86 × 116 cm, portrait)
    ========================================================= */
 
 /* ---------- Page sizing ---------- */
@@ -10,7 +10,7 @@
 
 * { box-sizing: border-box; }
 
-/* Every element typeset in Times — math also rendered with Times-compatible STIX font via MathJax */
+/* Every element typeset in Times; math also rendered with Times-compatible STIX font via MathJax */
 html, body {
     margin: 0;
     padding: 0;
@@ -25,7 +25,7 @@ html, body {
     print-color-adjust: exact;
 }
 
-/* Times for the body. MathJax CHTML uses its own webfont (MJXc-TEX) — leave it alone. */
+/* Times for the body. MathJax CHTML uses its own webfont (MJXc-TEX); leave it alone. */
 .poster {
     font-family: 'Times New Roman', Times, 'Liberation Serif', serif;
 }
@@ -42,7 +42,7 @@ html, body {
     --gold:         #b9882b;
     --rule:         #cdbfa3;
     --muted:        #5f6b7a;
-    --hl-bg:        #e9eef5;       /* soft slate-blue — elegant callout */
+    --hl-bg:        #e9eef5;       /* soft slate-blue, elegant callout */
     --thm-bg:       #f3ecd9;       /* warm parchment for theorem-style boxes */
     --thm-border:   #b9882b;
     --soft-bg:      #f3ecd9;       /* match theorem parchment */
@@ -261,7 +261,7 @@ html, body {
     border-bottom: 0.3mm solid var(--rule);
     padding-bottom: 2.2mm;
 }
-/* Section number — upright digit inside a circle badge */
+/* Section number: upright digit inside a circle badge */
 .card h2 .num {
     display: inline-flex;
     align-items: center;
@@ -381,7 +381,7 @@ strong.key { color: var(--accent); font-weight: 700; }
 }
 .fig-grid-2 .fig { margin: 0; }
 
-/* Stacked figures (LLaMA over Mistral) — constrain height so they fit. */
+/* Stacked figures (LLaMA over Mistral); constrain height so they fit. */
 .fig.stack-fig {
     margin: 0 0 1.5mm 0;
     text-align: center;
@@ -415,7 +415,7 @@ strong.key { color: var(--accent); font-weight: 700; }
     height: 100%;
     display: block;
 }
-/* MathJax-rendered math labels overlaid on the SVG — match poster math */
+/* MathJax-rendered math labels overlaid on the SVG; match poster math */
 .disel-diagram .mlab {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -477,7 +477,7 @@ strong.key { color: var(--accent); font-weight: 700; }
 .footer .right { text-align: right; }
 
 /* =========================================================
-   MathJax — render in Computer Modern (classic ICML/NeurIPS / LaTeX article look)
+   MathJax: render in Computer Modern (classic ICML/NeurIPS / LaTeX article look)
    ========================================================= */
 mjx-container svg { max-width: 100%; }
 

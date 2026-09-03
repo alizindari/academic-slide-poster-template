@@ -44,7 +44,7 @@
       slide.classList.toggle("is-active", slideIndex === index);
       slide.setAttribute("aria-hidden", slideIndex === index ? "false" : "true");
     });
-    document.title = `${slides[index].dataset.title || "Slides"} — ${index + 1}/${total}`;
+    document.title = `${slides[index].dataset.title || "Slides"} | ${index + 1}/${total}`;
     if (updateHash) history.replaceState(null, "", `#${index + 1}`);
   }
 

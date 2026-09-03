@@ -2,7 +2,7 @@
 
 # Academic Poster & Slide Templates
 
-### Beautiful, reproducible research communication—built with the web.
+### Beautiful, reproducible research communication, built with the web.
 
 One polished academic poster and two distinct presentation styles for two very
 different rooms: focused technical discussions and visual teaching.
@@ -22,7 +22,7 @@ different rooms: focused technical discussions and visual teaching.
 
 ## Rendered gallery
 
-These are real outputs from the repository—not mockups. Each preview opens its
+These are real outputs from the repository, not mockups. Each preview opens its
 full PDF.
 
 <table>
@@ -77,7 +77,7 @@ conferences.
 For slides, there are two types. I personally use the simpler version when it is
 a technical presentation, usually for colleagues or collaborators. Therefore,
 it is not colorful or fancy. Simple, elegant, and clean slides with a nice font
-are more than enough—especially when the mathematics font, which is the most
+are more than enough, especially when the mathematics font, which is the most
 important part, is right.
 
 The other version is fancier, with colors and shapes. I would use it for a
@@ -111,7 +111,7 @@ The convergence of GD and SGD deck is the simple, professional style. It is
 intentionally calm: white canvas, generous space, carefully typeset equations,
 light theorem boxes, understated blue accents, and centered page numbers.
 
-I use this style when the argument is the main event—proofs, propositions,
+I use this style when the argument is the main event: proofs, propositions,
 optimization theory, mathematical derivations, or a technical conversation
 with colleagues and collaborators. It looks close to a carefully prepared
 research talk without inheriting the visual clutter of a default slide theme.
@@ -149,7 +149,7 @@ coherent document.
 I think Computer Modern Unicode and TeX Gyre Termes are particularly beautiful
 for academic presentations: they have real mathematical character, excellent
 italics, and enough contrast to remain readable from a distance. Equations do
-not look pasted into the slide—they belong to the same visual system as the
+not look pasted into the slide; they belong to the same visual system as the
 surrounding text.
 
 The slide decks render mathematics locally with KaTeX, using familiar notation:
@@ -185,7 +185,7 @@ The slide decks render mathematics locally with KaTeX, using familiar notation:
 
 ## Quick start
 
-Clone the repository—or choose **Use this template** on GitHub—then serve the
+Clone the repository, or choose **Use this template** on GitHub, then serve the
 repository root:
 
 ```sh

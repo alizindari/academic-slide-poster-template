@@ -10,9 +10,9 @@ boxes, and the original compact spacing rules.
 
 ## Files
 
-- `index.html` — HTML source
-- `deck.css` — deck-specific layouts and exact typography
-- `slides.pdf` — rendered deck
+- `index.html`: HTML source
+- `deck.css`: deck-specific layouts and exact typography
+- `slides.pdf`: rendered deck
 
 Serve the repository root and open `/templates/slides-math/`, or regenerate
 both formats from the repository root:

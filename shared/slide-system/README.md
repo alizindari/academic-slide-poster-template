@@ -4,11 +4,11 @@ The files in this directory provide the 1280 × 720 canvas, local fonts, offline
 
 ## Contents
 
-- `theme.css` — typography, colors, layout primitives, and print rules.
-- `runtime.js` — KaTeX rendering, responsive scaling, hash links, and keyboard navigation.
-- `render-pdf.sh` — exports each slide separately with Chromium and joins the pages with `pdfunite`.
-- `vendor/katex/` — pinned KaTeX 0.16.22 runtime and math fonts.
-- `fonts/` — TeX Gyre Termes and Computer Modern Unicode, with their licenses.
+- `theme.css`: typography, colors, layout primitives, and print rules.
+- `runtime.js`: KaTeX rendering, responsive scaling, hash links, and keyboard navigation.
+- `render-pdf.sh`: exports each slide separately with Chromium and joins the pages with `pdfunite`.
+- `vendor/katex/`: pinned KaTeX 0.16.22 runtime and math fonts.
+- `fonts/`: TeX Gyre Termes and Computer Modern Unicode, with their licenses.
 
 ## Connect a deck
 
