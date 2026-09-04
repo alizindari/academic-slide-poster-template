@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>DISeL: Learning When to Adapt</title>
+<link rel="stylesheet" href="base.css">
 <link rel="stylesheet" href="style.css">
 
 <!-- MathJax 3 with TeX (Computer Modern), the classic ICML/NeurIPS / LaTeX article look -->
@@ -264,60 +265,61 @@ window.MathJax = {
             <defs>
               <marker id="arrN" viewBox="0 0 12 12" refX="11" refY="6"
                       markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f3a5f"/>
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#153b64"/>
               </marker>
               <marker id="arrA" viewBox="0 0 12 12" refX="11" refY="6"
                       markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 12 6 L 0 12 z" fill="#b6552c"/>
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#bd4f24"/>
               </marker>
               <marker id="arrG" viewBox="0 0 12 12" refX="11" refY="6"
                       markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 12 6 L 0 12 z" fill="#b9882b"/>
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#c18b24"/>
               </marker>
             </defs>
 
-            <!-- nodes & boxes (math labels overlaid as HTML below) -->
-            <circle cx="50"  cy="125" r="24" fill="#fff" stroke="#1f3a5f" stroke-width="2.5"/>
+            <!-- Aligned vector paths; original math labels and fonts below. -->
+            <circle cx="50"  cy="125" r="24" fill="#fff" stroke="#153b64" stroke-width="2.5"/>
 
             <!-- FROZEN: identical dimensions to GATE -->
-            <rect x="320" y="25"  width="300" height="60" rx="6" fill="#eaf0f8" stroke="#1f3a5f" stroke-width="2.4"/>
+            <rect x="320" y="25"  width="300" height="60" rx="4" fill="#e8f0fa" stroke="#153b64" stroke-width="2.4"/>
             <text x="470" y="44" text-anchor="middle" font-family="Times, 'Times New Roman', serif"
-                  font-size="14" font-weight="700" letter-spacing="1.2" fill="#1f3a5f">FROZEN</text>
+                  font-size="14" font-weight="700" letter-spacing="1.2" fill="#153b64">FROZEN</text>
 
-            <rect x="210" y="170" width="70"  height="50" rx="6" fill="#fbf0e6" stroke="#b6552c" stroke-width="2.2"/>
+            <rect x="210" y="170" width="70"  height="50" rx="4" fill="#fbe9d9" stroke="#bd4f24" stroke-width="2.2"/>
 
             <!-- GATE: identical dimensions to FROZEN -->
-            <rect x="320" y="165" width="300" height="60" rx="6" fill="#f3ecd9" stroke="#b9882b" stroke-width="2.4"/>
+            <rect x="320" y="165" width="300" height="60" rx="4" fill="#faedcc" stroke="#c18b24" stroke-width="2.4"/>
             <text x="470" y="183" text-anchor="middle" font-family="Times, 'Times New Roman', serif"
-                  font-size="13" font-weight="700" letter-spacing="1.4" fill="#b9882b">GATE</text>
+                  font-size="13" font-weight="700" letter-spacing="1.4" fill="#c18b24">GATE</text>
 
-            <rect x="660" y="170" width="70"  height="50" rx="6" fill="#fbf0e6" stroke="#b6552c" stroke-width="2.2"/>
+            <rect x="660" y="170" width="70"  height="50" rx="4" fill="#fbe9d9" stroke="#bd4f24" stroke-width="2.2"/>
 
-            <circle cx="795" cy="125" r="24" fill="#fff" stroke="#1f3a5f" stroke-width="2.5"/>
-            <circle cx="875" cy="125" r="24" fill="#1f3a5f"/>
+            <circle cx="795" cy="125" r="24" fill="#fff" stroke="#153b64" stroke-width="2.5"/>
+            <circle cx="875" cy="125" r="24" fill="#153b64"/>
 
             <!-- arrows -->
-            <path d="M 70 113 C 195 45, 260 55, 318 55"   stroke="#1f3a5f" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
-            <path d="M 70 137 C 130 195, 160 195, 208 195" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
-            <path d="M 130 175 C 210 145, 330 145, 420 165" stroke="#b9882b" stroke-width="3.5" stroke-dasharray="8 5"
+            <path d="M 74 125 H 105" stroke="#153b64" stroke-width="2.4" fill="none"/>
+            <path d="M 105 125 V 67 Q 105 55 117 55 H 318" stroke="#153b64" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
+            <path d="M 105 125 V 183 Q 105 195 117 195 H 208" stroke="#bd4f24" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 105 125 H 458 Q 470 125 470 137 V 163" stroke="#c18b24" stroke-width="2.4" stroke-dasharray="7 5"
                   fill="none" stroke-linecap="round" marker-end="url(#arrG)"/>
-            <circle cx="130" cy="175" r="5" fill="#b6552c"/>
+            <circle cx="105" cy="125" r="4" fill="#153b64"/>
 
-            <path d="M 280 195 L 318 195" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
-            <path d="M 620 195 L 658 195" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
-            <path d="M 730 195 C 765 195, 785 165, 789 152" stroke="#b6552c" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
-            <path d="M 620 55 C 720 55, 770 85, 778 108" stroke="#1f3a5f" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
-            <path d="M 819 125 L 849 125" stroke="#1f3a5f" stroke-width="2.6" fill="none" marker-end="url(#arrN)"/>
+            <path d="M 280 195 L 318 195" stroke="#bd4f24" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 620 195 L 658 195" stroke="#bd4f24" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 730 195 H 783 Q 795 195 795 183 V 151" stroke="#bd4f24" stroke-width="2.4" fill="none" marker-end="url(#arrA)"/>
+            <path d="M 620 55 H 783 Q 795 55 795 67 V 99" stroke="#153b64" stroke-width="2.4" fill="none" marker-end="url(#arrN)"/>
+            <path d="M 819 125 L 849 125" stroke="#153b64" stroke-width="2.6" fill="none" marker-end="url(#arrN)"/>
 
           </svg>
 
           <!-- HTML overlay math labels; MathJax renders them in the same font as the rest of the poster -->
-          <div class="mlab m-x"    style="left:5.4%;  top:50%;   color:#1f3a5f;">$\mathbf{x}$</div>
+          <div class="mlab m-x"    style="left:5.4%;  top:50%;   color:#153b64;">$\mathbf{x}$</div>
           <div class="mlab m-wox"  style="left:51.1%; top:26%;">$\mathbf{W}_{\!0}\,\mathbf{x}$</div>
-          <div class="mlab m-B"    style="left:26.6%; top:78%;   color:#b6552c;">$\mathbf{A}$</div>
+          <div class="mlab m-B"    style="left:26.6%; top:78%;   color:#bd4f24;">$\mathbf{A}$</div>
           <div class="mlab m-gate" style="left:51.1%; top:82.8%; font-size:0.78em;">$\operatorname{diag}\bigl(\sigma(\mathbf{W}_{\!g}\,\mathbf{x} + \mathbf{b}_g)\bigr)$</div>
-          <div class="mlab m-A"    style="left:75.5%; top:78%;   color:#b6552c;">$\mathbf{B}$</div>
-          <div class="mlab m-plus" style="left:86.4%; top:50%;   color:#1f3a5f;">$+$</div>
+          <div class="mlab m-A"    style="left:75.5%; top:78%;   color:#bd4f24;">$\mathbf{B}$</div>
+          <div class="mlab m-plus" style="left:86.4%; top:50%;   color:#153b64;">$+$</div>
           <div class="mlab m-y"    style="left:95.1%; top:50%;   color:#fff;">$\mathbf{y}$</div>
          </div>
         </div>

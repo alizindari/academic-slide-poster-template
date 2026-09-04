@@ -5,6 +5,11 @@ template. It uses the same components, typography, palette, and source structure
 as the vertical version, with spacing and content density adjusted for the wider
 canvas.
 
+The navy, rust, and gold styling matches the DISeL and LoRA examples. Colored
+section headers, solid theorem heading bars, and vector chart placeholders
+are shared with the vertical version. The [shared poster guide](../../shared/poster-system/README.md#theorem-headings)
+shows the theorem, proposition, lemma, and corollary variants.
+
 Edit `index.html`, replace `assets/logo-placeholder.svg`, and adjust the color
 variables in `../../shared/poster-system/theme.css`. Use SVG figures when
 possible so plots remain sharp at poster size.

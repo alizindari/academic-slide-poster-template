@@ -1,543 +1,341 @@
-/* =========================================================
-   Times-set poster (86 × 116 cm, portrait)
-   ========================================================= */
+/* LoRA poster appearance.
+   Loaded after base.css, which preserves the original typography and layout. */
 
-/* ---------- Page sizing ---------- */
-@page {
-    size: 860mm 1160mm;
-    margin: 0;
-}
-
-* { box-sizing: border-box; }
-
-/* Every element is typeset in Times; math uses a Times-compatible STIX font via MathJax. */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 860mm;
-    height: 1160mm;
-    font-family: 'Times New Roman', Times, 'Liberation Serif', serif;
-    font-size: 8.4mm;
-    line-height: 1.32;
-    color: #16202c;
-    background: #fbf8f1;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-}
-
-/* Times for the body. MathJax CHTML uses its own webfont (MJXc-TEX); leave it alone. */
-.poster {
-    font-family: 'Times New Roman', Times, 'Liberation Serif', serif;
-}
-
-/* ---------- Palette ---------- */
 :root {
-    --bg:           #fbf8f1;
-    --paper:        #ffffff;
-    --ink:          #16202c;
-    --primary:      #1f3a5f;
-    --primary-soft: #2d5288;
-    --accent:       #b6552c;
-    --accent-soft:  #d7a07f;
-    --gold:         #b9882b;
-    --rule:         #cdbfa3;
-    --muted:        #5f6b7a;
-    --hl-bg:        #e9eef5;       /* soft slate-blue, elegant callout */
-    --thm-bg:       #f3ecd9;       /* warm parchment for theorem-style boxes */
-    --thm-border:   #b9882b;
-    --soft-bg:      #f3ecd9;       /* match theorem parchment */
+    --bg: #fbf6eb;
+    --paper: #ffffff;
+    --primary: #153b64;
+    --accent: #bd4f24;
+    --gold: #c18b24;
+    --rule: #d8cbb1;
+    --muted: #536170;
+    --hl-bg: #e8f0fa;
+    --thm-bg: #faedcc;
+    --soft-bg: #faedcc;
+    --thm-border: #c18b24;
+    --on-dark-accent: #ffd18a;
+}
+
+html, body {
+    background: var(--bg);
 }
 
 .poster {
-    width: 860mm;
-    height: 1160mm;
-    padding: 18mm 22mm 14mm 22mm;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    padding: 20mm 22mm 13mm;
 }
 
-/* ---------- Decorative accents ---------- */
+/* A quiet frame, with color reserved for the research. */
 .poster::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 860mm;
-    height: 8mm;
-    background: linear-gradient(90deg, var(--primary) 0%, var(--primary) 60%, var(--accent) 60%, var(--accent) 100%);
+    height: 3mm;
+    background: linear-gradient(90deg,
+        var(--primary) 0 66%,
+        var(--accent) 66% 90%,
+        var(--gold) 90% 100%);
 }
+
 .poster::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 860mm;
-    height: 4mm;
-    background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 40%, var(--primary) 40%, var(--primary) 100%);
+    bottom: 0;
+    left: 22mm;
+    width: 816mm;
+    height: 1.2mm;
+    background: var(--primary);
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
 .header {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14mm;
-    padding-bottom: 8mm;
-    border-bottom: 0.6mm solid var(--primary);
-    margin-bottom: 8mm;
-    margin-top: 4mm;
-}
-
-.header .title-block {
-    flex: 1 1 auto;
-    min-width: 0;
+    margin-top: 2mm;
+    margin-bottom: 7mm;
+    padding-bottom: 7mm;
+    border-bottom: 0.35mm solid #bcc7d3;
 }
 
 .header .header-side {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6mm;
-    padding-top: 2mm;
-    width: 130mm;
+    gap: 5mm;
 }
 
-.header .cispa-logo {
-    width: 130mm;
-    height: auto;
-    display: block;
-}
-
-.header .tag-row {
-    display: flex;
-    gap: 2.5mm;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
-.tag-pill {
-    display: inline-block;
-    font-weight: 700;
-    font-size: 4.8mm;
-    letter-spacing: 0.5mm;
-    padding: 1.8mm 4mm;
-    border-radius: 1mm;
-    background: var(--primary);
-    color: #fff;
-    font-variant: small-caps;
-    white-space: nowrap;
-}
-.tag-pill.alt { background: var(--accent); }
+.tag-pill,
+.tag-pill.alt,
 .tag-pill.outline {
+    color: var(--primary);
     background: transparent;
-    color: var(--primary);
-    border: 0.4mm solid var(--primary);
+    border: 0.25mm solid #bec8d4;
+    border-radius: 0.6mm;
+    padding: 1.5mm 3mm;
 }
 
-.header h1 {
-    font-weight: 700;
-    font-size: 34mm;
-    line-height: 0.98;
-    color: var(--primary);
-    margin: 0 0 4mm 0;
-    letter-spacing: -0.8mm;
-}
-.header h1 .sub {
-    display: block;
-    font-weight: 400;
-    font-style: italic;
-    font-size: 13mm;
-    color: var(--accent);
-    margin-top: 4mm;
-    letter-spacing: -0.1mm;
+.tag-pill.alt {
+    color: #ffffff;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
-.header .authors {
-    font-size: 9mm;
-    font-weight: 600;
-    color: var(--ink);
-    margin-top: 6mm;
-    line-height: 1.25;
-}
-.header .authors sup { font-weight: 400; color: var(--accent); font-size: 5mm; }
-
-.header .affil {
-    font-style: italic;
-    font-size: 6.6mm;
-    color: var(--muted);
-    margin-top: 2.5mm;
-    line-height: 1.32;
-}
-
-.header .code {
-    font-size: 5.6mm;
-    color: var(--primary);
-    margin-top: 3.5mm;
-    line-height: 1.3;
-}
-.header .code .label {
-    color: var(--accent);
-    font-weight: 700;
-    font-variant: small-caps;
-    letter-spacing: 0.5mm;
-}
-
-/* =========================================================
-   TL;DR STRIP
-   ========================================================= */
-.tldr {
-    margin: 0 0 8mm 0;
-    padding: 6mm 9mm;
+.tag-pill:not(.alt):not(.outline) {
+    color: #ffffff;
     background: var(--primary);
-    color: #fff;
-    border-radius: 2mm;
-    display: grid;
-    grid-template-columns: 36mm minmax(0,1fr);
-    gap: 8mm;
-    align-items: center;
-    box-shadow: 0 1mm 3mm rgba(0,0,0,0.08);
+    border-color: var(--primary);
 }
-.tldr .tag {
-    font-weight: 700;
-    font-size: 13mm;
-    color: var(--gold);
-    letter-spacing: 0.4mm;
-    font-variant: small-caps;
-    border-right: 0.4mm solid rgba(255,255,255,0.35);
-    padding-right: 7mm;
-    line-height: 1;
-    text-align: right;
-}
-.tldr .body {
-    font-size: 7.4mm;
-    line-height: 1.32;
-}
-.tldr .body strong { color: var(--gold); font-weight: 700; }
-.tldr .body em { font-style: italic; color: #f4e6c4; }
 
-/* =========================================================
-   COLUMN LAYOUT
-   ========================================================= */
+.tag-pill.outline {
+    background: #e8f0fa;
+    border-color: #9bb6d0;
+}
+
+/* Give the label enough width and improve contrast on the dark strip. */
+.tldr {
+    grid-template-columns: 48mm minmax(0, 1fr);
+    gap: 8mm;
+    padding: 6mm 8mm;
+    margin-bottom: 7mm;
+    border-radius: 0.8mm;
+    box-shadow: none;
+}
+
+.tldr .tag {
+    color: var(--on-dark-accent);
+    text-align: left;
+    padding-right: 6mm;
+    border-right-color: #74869d;
+}
+
+.tldr .body strong {
+    color: var(--on-dark-accent);
+}
+
+.tldr .body em {
+    color: #ffffff;
+}
+
+/* Consistent section hierarchy, without stacked borders and shadows. */
 .columns {
-    flex: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: 9mm;
-    align-content: start;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8mm;
+    align-items: stretch;
 }
 
 .col {
-    display: flex;
-    flex-direction: column;
     gap: 6mm;
+    min-width: 0;
 }
 
-/* =========================================================
-   CARDS
-   ========================================================= */
+.col > :last-child {
+    flex: 1;
+}
+
 .card {
-    background: var(--paper);
-    padding: 6mm 6.5mm 6mm 6.5mm;
-    border-radius: 1.6mm;
-    border: 0.25mm solid #e3dcc9;
-    border-top: 0.9mm solid var(--primary);
-    box-shadow: 0 0.4mm 0.8mm rgba(0,0,0,0.04);
+    padding: 5.5mm 6.5mm;
+    border: 0.25mm solid #dce0e4;
+    border-top: 0.65mm solid var(--primary);
+    border-radius: 0.7mm;
+    box-shadow: none;
 }
 
-.card.accent  { border-top-color: var(--accent); }
-.card.gold    { border-top-color: var(--gold); }
+.card.accent {
+    border-top-color: var(--accent);
+}
 
-.card h2 {
-    font-weight: 700;
-    font-size: 9.6mm;
+.card.gold {
+    border-top-color: var(--gold);
+}
+
+.card h2,
+.card.accent h2,
+.card.gold h2 {
     color: var(--primary);
-    margin: 0 0 4mm 0;
-    letter-spacing: -0.2mm;
-    display: flex;
-    align-items: center;
-    gap: 3mm;
-    border-bottom: 0.3mm solid var(--rule);
-    padding-bottom: 2.2mm;
+    margin-bottom: 4mm;
+    padding-bottom: 3mm;
+    border-bottom: 0.25mm solid #c6d7e9;
+    position: relative;
+    isolation: isolate;
 }
-/* Section number: upright digit inside a circle badge */
-.card h2 .num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 11mm;
-    height: 11mm;
-    border-radius: 50%;
+
+/* Flat colored header bands add warmth without decorative effects. */
+.card h2::before {
+    content: '';
+    position: absolute;
+    inset: -5.5mm -6.5mm 0;
+    z-index: -1;
+    background: #e8f0fa;
+}
+
+.card.accent h2 {
+    color: #a84320;
+    border-bottom-color: #e6c7ae;
+}
+
+.card.accent h2::before {
+    background: #fbe9d9;
+}
+
+.card.gold h2 {
+    color: #936017;
+    border-bottom-color: #e4cda2;
+}
+
+.card.gold h2::before {
+    background: #faedcc;
+}
+
+.card h2 .num,
+.card.accent h2 .num,
+.card.gold h2 .num {
+    color: #ffffff;
+    background: var(--primary);
+    border: 0.3mm solid var(--primary);
+}
+
+.card.accent h2 .num {
     background: var(--accent);
-    color: #fff;
-    font-weight: 700;
-    font-size: 6.4mm;
-    font-style: normal;
-    line-height: 1;
-    flex-shrink: 0;
-}
-.card.accent h2  { color: var(--accent); }
-.card.accent h2 .num { background: var(--primary); color: #fff; }
-.card.gold h2 { color: var(--gold); }
-.card.gold h2 .num { background: var(--primary); color: #fff; }
-
-.card h3 {
-    font-weight: 700;
-    font-size: 7.4mm;
-    color: var(--primary);
-    margin: 4.5mm 0 2.2mm 0;
-    font-style: normal;
+    border-color: var(--accent);
 }
 
-.card p {
-    margin: 0 0 2.5mm 0;
-    text-align: justify;
+.card.gold h2 .num {
+    background: #936017;
+    border-color: #936017;
 }
-.card p + p { margin-top: 1.5mm; }
 
-.card ul {
-    margin: 1mm 0 2mm 0;
-    padding-left: 5.5mm;
+.card p,
+.card ul li {
+    text-align: left;
 }
-.card ul li { margin-bottom: 1.6mm; text-align: justify; }
-.card ul li::marker { color: var(--accent); }
 
-/* Inline emphasis */
-em.term { font-style: italic; color: var(--primary); font-weight: 600; }
-strong.key { color: var(--accent); font-weight: 700; }
-.mono { font-family: 'Times New Roman', Times, serif !important; font-style: italic; font-size: 0.95em; }
+.card > :last-child {
+    margin-bottom: 0;
+}
 
-/* =========================================================
-   MATH BOXES (plain, for definitions and observations)
-   ========================================================= */
 .eqbox {
-    background: var(--soft-bg);
-    border-left: 1.2mm solid var(--gold);
+    border-left-width: 0.75mm;
+    border-radius: 0;
     padding: 3mm 5mm;
-    margin: 3mm 0;
-    border-radius: 0 1mm 1mm 0;
 }
-.eqbox.thm {
-    background: var(--thm-bg);
-    border-left-color: var(--accent);
-}
+
 .eqbox.method {
-    background: #eaf0f8;
-    border-left-color: var(--primary);
+    background: #e8f0fa;
 }
-.eqbox .lbl {
-    display: inline-block;
-    font-weight: 700;
-    font-size: 5.2mm;
-    letter-spacing: 0.4mm;
-    color: var(--accent);
-    margin-bottom: 1.6mm;
-    font-style: italic;
-}
-.eqbox.method .lbl { color: var(--primary); }
-
-/* =========================================================
-   THEOREM-STYLE BOXES: bold black title, colored side accent
-   ========================================================= */
-.thmbox {
-    background: var(--thm-bg);
-    border-left: 1.4mm solid var(--accent);
-    border-radius: 0 1.4mm 1.4mm 0;
-    margin: 3.5mm 0;
-    overflow: hidden;
-}
-.thmbox.cor    { border-left-color: var(--gold);    background: #faf2dc; }
-.thmbox.prop   { border-left-color: var(--primary); background: #eaf0f8; }
-.thmbox.lemma  { border-left-color: var(--primary); background: #eaf0f8; }
-
-.thmbox .thmhead {
-    background: transparent;
-    color: #000;
-    padding: 2.8mm 5mm 1.8mm 5mm;
-    font-weight: 700;
-    font-size: 6.6mm;
-    letter-spacing: 0;
-    font-style: normal;
-    border-bottom: 0.3mm solid rgba(0,0,0,0.22);
-}
-
-.thmbox .thmbody {
-    padding: 2.2mm 5mm 2.8mm 5mm;
-    background: transparent;
-}
-
-.thmbox .thmbody mjx-container[display="true"] {
-    margin: 1.2mm 0 !important;
-}
-.thmbox .thmbody p {
-    margin: 0 0 1.5mm 0;
-    text-align: justify;
-}
-.thmbox .thmbody p:last-child { margin-bottom: 0; }
 
 .callout {
-    background: var(--hl-bg);
-    border-left: 1mm solid var(--primary);
-    padding: 3.5mm 5mm;
-    margin: 3mm 0;
-    border-radius: 0 1mm 1mm 0;
-    font-style: italic;
-    color: var(--ink);
+    border-left-width: 0.75mm;
+    border-radius: 0;
+    background: #e8f0fa;
 }
-.callout strong { color: var(--primary); font-style: normal; font-weight: 700; }
 
-/* =========================================================
-   FIGURES
-   ========================================================= */
-.fig {
-    margin: 3mm 0 1mm 0;
-    text-align: center;
-}
 .fig img,
 .fig object,
 .fig svg {
-    width: 100%;
-    height: auto;
-    max-width: 100%;
-    border-radius: 0.8mm;
+    border-radius: 0;
 }
-.fig .cap {
-    font-size: 5.4mm;
-    line-height: 1.34;
-    color: var(--muted);
-    margin-top: 2mm;
-    text-align: left;
-    font-style: italic;
-}
-.fig .cap b { color: var(--primary); font-style: normal; }
 
 .fig-grid-2 {
-    display: grid;
-    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-    gap: 3mm;
-    align-items: end;
+    gap: 4mm;
 }
-.fig-grid-2 .fig { margin: 0; }
-.fig-grid-2 .fig img { width: 100%; height: auto; }
 
-/* Stacked figures (LLaMA over Mistral); constrain height so they fit. */
-.fig.stack-fig {
-    margin: 0 0 1.5mm 0;
-    text-align: center;
+.fig-grid-2 > .fig + .fig {
+    border-left: 0.25mm solid #e1e5e9;
+    padding-left: 4mm;
 }
+
+.fig .cap {
+    margin-top: 3mm;
+}
+
 .fig.stack-fig img {
-    width: 100%;
-    max-width: 100%;
-    max-height: 145mm;
-    margin: 0 auto;
+    object-fit: contain;
 }
 
-/* =========================================================
-   DIAGRAM
-   ========================================================= */
-.disel-diagram {
-    background: #fff;
-    border: 0.25mm solid #e3dcc9;
-    border-radius: 1.2mm;
-    padding: 3mm 4mm 2mm 4mm;
-    margin: 2mm 0;
+.fig.stack-fig + .fig.stack-fig {
+    padding-top: 1.5mm;
+    margin-top: 1.5mm;
+    border-top: 0.25mm solid #e1e5e9;
 }
-.disel-diagram .stage {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 920 / 250;
-}
-.disel-diagram .stage svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-/* MathJax-rendered math labels overlaid on the SVG; match poster math. */
-.disel-diagram .mlab {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    white-space: nowrap;
-    line-height: 1;
-    font-size: 0.95em;
-}
-.disel-diagram .mlab mjx-container { font-size: 100% !important; margin: 0 !important; }
 
-/* =========================================================
-   TAKEAWAYS / FOOTER
-   ========================================================= */
+/* A concluding panel, not a second competing headline. */
 .takeaways {
-    background: var(--primary);
-    color: #fff;
-    border-radius: 2mm;
-    padding: 5mm 6mm;
-    border-top: 0.9mm solid var(--gold);
+    padding: 6mm 6.5mm;
+    border: 0.25mm solid var(--primary);
+    border-top: 1.2mm solid var(--gold);
+    border-radius: 0.7mm;
 }
+
 .takeaways h2 {
-    color: #fff;
-    font-weight: 700;
-    font-size: 9.6mm;
-    margin: 0 0 3.2mm 0;
-    letter-spacing: -0.2mm;
-    border-bottom: 0.3mm solid rgba(255,255,255,0.3);
-    padding-bottom: 2.2mm;
-    display: flex;
-    align-items: center;
-    gap: 3mm;
+    padding-bottom: 3mm;
+    border-bottom-color: #6e819b;
 }
+
 .takeaways h2 .num {
-    background: var(--gold);
+    display: inline-flex;
+    width: 11mm;
+    height: 11mm;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--on-dark-accent);
     color: var(--primary);
-    font-style: normal;
-    font-size: 6.8mm;
+    border: 0.3mm solid var(--on-dark-accent);
 }
-.takeaways ul li::marker { color: var(--gold); }
-.takeaways em.term { color: var(--gold); }
-.takeaways strong.key { color: #f4e6c4; }
+
+.takeaways ul {
+    margin: 0;
+    padding-left: 5.5mm;
+}
+
+.takeaways ul li {
+    margin-bottom: 2.5mm;
+    padding-left: 0.5mm;
+}
+
+.takeaways ul li:last-child {
+    margin-bottom: 0;
+}
+
+.takeaways ul li::marker,
+.takeaways em.term {
+    color: var(--on-dark-accent);
+}
+
+.takeaways strong.key {
+    color: #ffdda4;
+}
 
 .footer {
     margin-top: 6mm;
+    margin-bottom: 3mm;
     padding-top: 3mm;
-    border-top: 0.3mm solid var(--rule);
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    font-size: 5mm;
-    color: var(--muted);
-    font-style: italic;
-}
-.footer .center {
-    color: var(--primary);
-    font-weight: 600;
-    font-style: normal;
-}
-.footer .right { text-align: right; }
-
-/* =========================================================
-   MathJax: render in Computer Modern (classic ICML/NeurIPS / LaTeX article look)
-   ========================================================= */
-mjx-container svg { max-width: 100%; }
-
-mjx-container { font-size: 100% !important; }
-
-mjx-container[display="true"] {
-    margin: 1.4mm 0 !important;
-    display: block !important;
-    max-width: 100%;
-    overflow-x: hidden;
+    border-top: 0.35mm solid #bcc7d3;
 }
 
-.eqbox mjx-container[display="true"],
-.thmbox .thmbody mjx-container[display="true"] {
-    font-size: 100% !important;
+/* LoRA's theorem hierarchy uses the same warm/cool palette. */
+.thmbox {
+    background: #faf0d7;
+    border-left-width: 0.85mm;
+    border-radius: 0;
 }
 
-/* Multi-line aligned equations sometimes overflow horizontally; scale them down. */
-.thmbox .thmbody mjx-container[display="true"] mjx-math,
-.eqbox mjx-container[display="true"] mjx-math {
-    max-width: 100%;
+.thmbox .thmhead {
+    color: #ffffff;
+    background: #a84320;
+    border-bottom-color: #a84320;
 }
 
-.math-hl { background: rgba(185,136,43,0.18); padding: 0 1mm; border-radius: 0.5mm; }
+.thmbox.prop,
+.thmbox.lemma {
+    background: #e8f0fa;
+}
+
+.thmbox.prop .thmhead,
+.thmbox.lemma .thmhead {
+    color: #ffffff;
+    background: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.thmbox.cor {
+    background: #faedcc;
+}
+
+.thmbox.cor .thmhead {
+    color: #ffffff;
+    background: #936017;
+    border-bottom-color: #936017;
+}
+
+.thmbox .thmbody p {
+    text-align: left;
+}

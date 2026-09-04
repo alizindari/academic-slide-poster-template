@@ -55,9 +55,17 @@ opens its full PDF.
     </td>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top">
+    <td width="34%" align="center" valign="top">
+      <a href="templates/poster-vertical/poster.pdf">
+        <img src="docs/assets/previews/poster-vertical.png" alt="Rendered vertical academic poster template with navy, rust, and gold section headers, equations, and diagrams" width="100%">
+      </a>
+      <br>
+      <strong>Vertical poster template</strong><br>
+      <sub>860 × 1160 mm portrait canvas</sub>
+    </td>
+    <td width="66%" align="center" valign="top">
       <a href="templates/poster-horizontal/poster.pdf">
-        <img src="docs/assets/previews/poster-horizontal.png" alt="Rendered horizontal academic poster template with three columns, equations, charts, and takeaways" width="100%">
+        <img src="docs/assets/previews/poster-horizontal.png" alt="Rendered horizontal academic poster template with matching navy, rust, and gold styling, charts, and takeaways" width="100%">
       </a>
       <br>
       <strong>Horizontal poster template</strong> · <sub>The same system on a 1160 × 860 mm landscape canvas</sub>
@@ -113,6 +121,14 @@ The poster comes in an **860 × 1160 mm vertical version** and a **1160 × 860 m
 horizontal version**. Both provide a strong title area, a three-column research
 narrative, theorem and equation callouts, figure panels, takeaways,
 affiliations, and room for project links.
+
+I use navy, rust, and gold accents on a warm background, with colored section
+headers and clear math boxes. The two examples and both template orientations
+use this style. The text and math fonts stay the same.
+
+The templates also include theorem, proposition, lemma, and corollary boxes
+with solid colored headings, so the title stands apart from the statement.
+See the [heading variants](shared/poster-system/README.md#theorem-headings).
 
 Both folders use the same base theme. The orientation is an explicit parameter
 on the root HTML element: `data-orientation="vertical"` or

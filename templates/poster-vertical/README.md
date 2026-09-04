@@ -3,6 +3,11 @@
 This is the 860 × 1160 mm portrait version of the shared research-poster
 template.
 
+It uses the same navy, rust, and gold styling as the DISeL and LoRA examples,
+with colored section headers, solid theorem heading bars, and vector chart
+placeholders. The [shared poster guide](../../shared/poster-system/README.md#theorem-headings)
+shows the theorem, proposition, lemma, and corollary variants.
+
 Edit `index.html`, replace `assets/logo-placeholder.svg`, and adjust the color
 variables in `../../shared/poster-system/theme.css`. Use SVG figures when
 possible so plots remain sharp at poster size.

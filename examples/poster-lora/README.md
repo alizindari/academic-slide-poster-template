@@ -5,6 +5,11 @@ full fine-tuning with linear-regression and Qwen2.5 experiments. It demonstrates
 how the poster system handles theorem statements, dense equations, multi-panel
 figures, and a three-column technical narrative.
 
+The navy, rust, and gold palette and colored theorem boxes match the poster
+templates. `base.css` holds the original typography and layout; `style.css`
+controls the visual refinements. Edit the palette at the top of `style.css`.
+All figure assets are included in this folder.
+
 Use `templates/poster-vertical/` or `templates/poster-horizontal/` as the
 starting point for a new project. This folder is a subject-specific example and
 should not be treated as a blank template.
