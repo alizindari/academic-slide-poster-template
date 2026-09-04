@@ -20,8 +20,8 @@ slide styles.
 
 ## Rendered gallery
 
-These are real outputs from the repository, not mockups. Each preview opens its
-full PDF.
+These previews are generated from the templates in this repository. Each one
+opens its full PDF.
 
 <table>
   <tr>
