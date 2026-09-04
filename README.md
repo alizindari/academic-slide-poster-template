@@ -2,11 +2,8 @@
 
 # Academic Poster & Slide Templates
 
-### Beautiful, reproducible research communication, built with the web.
-
-One polished academic poster template, two complete poster examples, and two
-distinct presentation styles for focused technical discussions and visual
-teaching.
+This repository includes one poster template, two poster examples, and two
+slide styles.
 
 [![HTML](https://img.shields.io/badge/HTML5-source-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS](https://img.shields.io/badge/CSS3-design-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
