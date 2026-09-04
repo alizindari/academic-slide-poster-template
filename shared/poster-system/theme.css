@@ -1,8 +1,3 @@
-@page {
-  size: 860mm 1160mm;
-  margin: 0;
-}
-
 :root {
   --background: #fbf8f1;
   --paper: #fff;
@@ -16,12 +11,22 @@
   --gold-soft: #f4ecd8;
 }
 
+html[data-orientation="vertical"] {
+  --poster-width: 860mm;
+  --poster-height: 1160mm;
+}
+
+html[data-orientation="horizontal"] {
+  --poster-width: 1160mm;
+  --poster-height: 860mm;
+}
+
 * { box-sizing: border-box; }
 
 html,
 body {
-  width: 860mm;
-  height: 1160mm;
+  width: var(--poster-width);
+  height: var(--poster-height);
   margin: 0;
   padding: 0;
   color: var(--ink);
@@ -37,8 +42,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 860mm;
-  height: 1160mm;
+  width: var(--poster-width);
+  height: var(--poster-height);
   padding: 18mm 22mm 15mm;
 }
 
@@ -273,3 +278,338 @@ mjx-container[display="true"] { margin: 1.6mm 0 !important; overflow: hidden; }
 @media screen {
   body { box-shadow: 0 0 16mm rgb(0 0 0 / 18%); }
 }
+
+html[data-orientation="horizontal"] body {
+  font-size: 6.4mm;
+  line-height: 1.26;
+}
+
+html[data-orientation="horizontal"] .poster {
+  padding: 15mm 20mm 12mm;
+}
+
+html[data-orientation="horizontal"] .poster::before { height: 7mm; }
+
+html[data-orientation="horizontal"] .poster-header {
+  grid-template-columns: 1fr 125mm;
+  gap: 10mm;
+  margin-top: 3mm;
+  padding-bottom: 5mm;
+}
+
+html[data-orientation="horizontal"] .kicker {
+  margin-bottom: 2mm;
+  font-size: 4.2mm;
+}
+
+html[data-orientation="horizontal"] .poster-header h1 {
+  font-size: 22mm;
+  letter-spacing: -.45mm;
+}
+
+html[data-orientation="horizontal"] .subtitle {
+  margin-top: 2.5mm;
+  font-size: 8.5mm;
+}
+
+html[data-orientation="horizontal"] .authors {
+  margin-top: 3.5mm;
+  font-size: 6.7mm;
+}
+
+html[data-orientation="horizontal"] .affiliations {
+  margin-top: 1.5mm;
+  font-size: 4.8mm;
+}
+
+html[data-orientation="horizontal"] .contact {
+  margin-top: 2mm;
+  font-size: 4.3mm;
+}
+
+html[data-orientation="horizontal"] .poster-header__side {
+  gap: 4mm;
+  padding-top: 1mm;
+}
+
+html[data-orientation="horizontal"] .poster-header__side img {
+  width: 118mm;
+  max-height: 38mm;
+}
+
+html[data-orientation="horizontal"] .tag-row { gap: 2mm; }
+
+html[data-orientation="horizontal"] .tag-row span {
+  padding: 1.4mm 3mm;
+  font-size: 3.8mm;
+}
+
+html[data-orientation="horizontal"] .summary-strip {
+  grid-template-columns: 32mm 1fr;
+  gap: 6mm;
+  margin: 5mm 0;
+  padding: 4mm 7mm;
+}
+
+html[data-orientation="horizontal"] .summary-strip > strong {
+  padding-right: 5mm;
+  font-size: 9mm;
+}
+
+html[data-orientation="horizontal"] .summary-strip p { font-size: 5.6mm; }
+
+html[data-orientation="horizontal"] .poster-columns { gap: 7mm; }
+
+html[data-orientation="horizontal"] .poster-template .poster-column { gap: 4mm; }
+
+html[data-orientation="horizontal"] .poster-template .poster-column:nth-child(1) {
+  grid-template-rows: .9fr 1.35fr .7fr .65fr .62fr;
+}
+
+html[data-orientation="horizontal"] .poster-template .poster-column:nth-child(2) {
+  grid-template-rows: 1fr 1.35fr .68fr .62fr .58fr;
+}
+
+html[data-orientation="horizontal"] .poster-template .poster-column:nth-child(3) {
+  grid-template-rows: .82fr .68fr .62fr .52fr .88fr;
+}
+
+html[data-orientation="horizontal"] .card {
+  padding: 3.8mm 4.2mm;
+}
+
+html[data-orientation="horizontal"] .card h2,
+html[data-orientation="horizontal"] .takeaways h2 {
+  gap: 2mm;
+  margin-bottom: 2.4mm;
+  padding-bottom: 1.4mm;
+  font-size: 7.1mm;
+}
+
+html[data-orientation="horizontal"] .card h2 span,
+html[data-orientation="horizontal"] .takeaways h2 span {
+  flex-basis: 8.5mm;
+  width: 8.5mm;
+  height: 8.5mm;
+  font-size: 4.8mm;
+}
+
+html[data-orientation="horizontal"] .card h3 {
+  margin: 2.5mm 0 1.3mm;
+  font-size: 5.7mm;
+}
+
+html[data-orientation="horizontal"] .card p { margin-bottom: 1.7mm; }
+
+html[data-orientation="horizontal"] .card ul {
+  margin-top: 1.2mm;
+  padding-left: 5mm;
+}
+
+html[data-orientation="horizontal"] .card li { margin-bottom: 1mm; }
+
+html[data-orientation="horizontal"] .callout,
+html[data-orientation="horizontal"] .theorem-box,
+html[data-orientation="horizontal"] .equation-box {
+  margin: 2mm 0;
+  padding: 2.4mm 3.5mm;
+}
+
+html[data-orientation="horizontal"] .process {
+  grid-template-columns: 1fr 7mm 1fr 7mm 1fr;
+  margin: 2.5mm 0 1.5mm;
+}
+
+html[data-orientation="horizontal"] .process div {
+  min-height: 23mm;
+  padding: 2mm;
+}
+
+html[data-orientation="horizontal"] .process small { font-size: 3.8mm; }
+
+html[data-orientation="horizontal"] .process i { font-size: 7mm; }
+
+html[data-orientation="horizontal"] .method-diagram {
+  grid-template-columns: 27mm 12mm 1fr 12mm 27mm;
+  margin: 3mm 0;
+}
+
+html[data-orientation="horizontal"] .node {
+  height: 27mm;
+  font-size: 4mm;
+}
+
+html[data-orientation="horizontal"] .node b { font-size: 5.5mm; }
+
+html[data-orientation="horizontal"] .arrow { font-size: 8mm; }
+
+html[data-orientation="horizontal"] .method-block {
+  height: 38mm;
+  padding: 3mm;
+}
+
+html[data-orientation="horizontal"] .method-block small { font-size: 3.6mm; }
+
+html[data-orientation="horizontal"] .method-block b {
+  margin: 1mm 0;
+  font-size: 7mm;
+}
+
+html[data-orientation="horizontal"] .method-block span { font-size: 4mm; }
+
+html[data-orientation="horizontal"] .chart-placeholder {
+  height: 88mm;
+  padding: 7mm 5mm 18mm 13mm;
+}
+
+html[data-orientation="horizontal"] .chart-y {
+  top: 34mm;
+  left: -13mm;
+  font-size: 4mm;
+}
+
+html[data-orientation="horizontal"] .bars { gap: 5mm; }
+
+html[data-orientation="horizontal"] .bars span { font-size: 3.5mm; }
+
+html[data-orientation="horizontal"] .caption { font-size: 4.1mm; }
+
+html[data-orientation="horizontal"] .result-number {
+  gap: 3mm;
+  margin-top: 2.5mm;
+  padding: 2.5mm 3.5mm;
+}
+
+html[data-orientation="horizontal"] .result-number strong { font-size: 9.5mm; }
+
+html[data-orientation="horizontal"] .result-number span { font-size: 4.5mm; }
+
+html[data-orientation="horizontal"] table {
+  margin-top: 2mm;
+  font-size: 4.5mm;
+}
+
+html[data-orientation="horizontal"] th,
+html[data-orientation="horizontal"] td { padding: 1.8mm 2.2mm; }
+
+html[data-orientation="horizontal"] .mini-panels,
+html[data-orientation="horizontal"] .two-up {
+  gap: 3mm;
+  margin: 2.5mm 0;
+}
+
+html[data-orientation="horizontal"] .mini-panels > div,
+html[data-orientation="horizontal"] .two-up > div { padding: 2.5mm; }
+
+html[data-orientation="horizontal"] .mini-panels small { font-size: 3.8mm; }
+
+html[data-orientation="horizontal"] .spark {
+  height: 23mm;
+  margin: 2mm 0;
+}
+
+html[data-orientation="horizontal"] .two-up p { font-size: 4.4mm; }
+
+html[data-orientation="horizontal"] .contribution-grid { gap: 1.5mm; }
+
+html[data-orientation="horizontal"] .contribution-grid > div {
+  grid-template-columns: 9mm 1fr;
+  gap: 2mm;
+  padding: 1.6mm 2mm;
+}
+
+html[data-orientation="horizontal"] .contribution-grid b { font-size: 4mm; }
+
+html[data-orientation="horizontal"] .contribution-grid p { font-size: 4.4mm; }
+
+html[data-orientation="horizontal"] .checklist {
+  gap: 1.5mm;
+  margin-bottom: 2mm;
+}
+
+html[data-orientation="horizontal"] .checklist span {
+  padding: 2mm;
+  font-size: 4.1mm;
+}
+
+html[data-orientation="horizontal"] .ablation-grid {
+  gap: 1.5mm;
+  margin: 2mm 0;
+}
+
+html[data-orientation="horizontal"] .ablation-grid > div {
+  grid-template-columns: 34mm 1fr 14mm;
+  gap: 2mm;
+  font-size: 4mm;
+}
+
+html[data-orientation="horizontal"] .before-after {
+  grid-template-columns: 1fr 8mm 1fr;
+}
+
+html[data-orientation="horizontal"] .before-after > div { padding: 2mm 3mm; }
+
+html[data-orientation="horizontal"] .before-after small { font-size: 3.5mm; }
+
+html[data-orientation="horizontal"] .before-after p {
+  margin-top: 1mm;
+  font-size: 4.3mm;
+}
+
+html[data-orientation="horizontal"] .failure-list { gap: 1.5mm; }
+
+html[data-orientation="horizontal"] .failure-list > div {
+  grid-template-columns: 8mm 1fr;
+  gap: 2mm;
+  padding-bottom: 1.5mm;
+}
+
+html[data-orientation="horizontal"] .failure-list b {
+  width: 7mm;
+  height: 7mm;
+  font-size: 3.7mm;
+}
+
+html[data-orientation="horizontal"] .failure-list p { font-size: 4.3mm; }
+
+html[data-orientation="horizontal"] .next-steps {
+  grid-template-columns: 1fr 6mm 1fr 6mm 1fr;
+}
+
+html[data-orientation="horizontal"] .next-steps > div {
+  gap: 1mm;
+  min-height: 22mm;
+  padding: 2mm;
+}
+
+html[data-orientation="horizontal"] .next-steps b { font-size: 4.3mm; }
+
+html[data-orientation="horizontal"] .next-steps span { font-size: 3.7mm; }
+
+html[data-orientation="horizontal"] .takeaways { padding: 4mm 4.5mm 5mm; }
+
+html[data-orientation="horizontal"] .takeaways ol {
+  margin: 1.5mm 0 3mm;
+  padding-left: 5.5mm;
+}
+
+html[data-orientation="horizontal"] .takeaways li { margin-bottom: 1.2mm; }
+
+html[data-orientation="horizontal"] .qr-placeholder {
+  width: 22mm;
+  height: 22mm;
+  margin: 2mm auto 1mm;
+  border-width: 1.5mm;
+  background-size: 5mm 5mm;
+  font-size: 4mm;
+}
+
+html[data-orientation="horizontal"] .takeaways__link { font-size: 4.1mm; }
+
+html[data-orientation="horizontal"] .poster-footer {
+  margin: 4mm 0 3mm;
+  padding-top: 2mm;
+  font-size: 3.8mm;
+}
+
+html[data-orientation="horizontal"] mjx-container[display="true"] { margin: 1mm 0 !important; }

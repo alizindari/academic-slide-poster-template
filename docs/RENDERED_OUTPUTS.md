@@ -8,7 +8,8 @@ Every poster or slide source has a committed PDF beside it. Regenerate the compl
 
 | Source | PDF |
 | --- | --- |
-| `templates/poster/index.html` | `templates/poster/poster.pdf` |
+| `templates/poster-vertical/index.html` | `templates/poster-vertical/poster.pdf` |
+| `templates/poster-horizontal/index.html` | `templates/poster-horizontal/poster.pdf` |
 | `templates/slides-math/index.html` | `templates/slides-math/slides.pdf` |
 | `examples/poster-disel/index.html` | `examples/poster-disel/poster.pdf` |
 | `examples/poster-lora/index.html` | `examples/poster-lora/poster.pdf` |

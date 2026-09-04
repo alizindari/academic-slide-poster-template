@@ -2,7 +2,7 @@
 
 # Academic Poster & Slide Templates
 
-This repository includes one poster template, two poster examples, and two
+This repository includes two poster templates, two poster examples, and two
 slide styles.
 
 [![HTML](https://img.shields.io/badge/HTML5-source-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
@@ -12,7 +12,7 @@ slide styles.
 [![PDF](https://img.shields.io/badge/PDF-ready-B42318?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](docs/RENDERED_OUTPUTS.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-2F816B?style=for-the-badge)](LICENSE)
 
-<img src="docs/assets/template-overview.svg" alt="Overview of the academic poster, mathematical slides, and visual teaching slides" width="100%">
+<img src="docs/assets/template-overview.svg" alt="Overview of vertical and horizontal academic posters, mathematical slides, and visual teaching slides" width="100%">
 
 **[Browse the templates](#what-is-included) · [Start editing](#quick-start) · [Render every PDF](#pdf-export) · [See the gallery](#rendered-gallery)**
 
@@ -20,7 +20,7 @@ slide styles.
 
 ## Rendered gallery
 
-These previews are generated from the templates in this repository. Each one
+These previews are generated from the files in this repository. Each one
 opens its full PDF.
 
 <table>
@@ -54,6 +54,15 @@ opens its full PDF.
       <strong>Visual transformer slides</strong> · <sub>Color, diagrams, and a teaching narrative</sub>
     </td>
   </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top">
+      <a href="templates/poster-horizontal/poster.pdf">
+        <img src="docs/assets/previews/poster-horizontal.png" alt="Rendered horizontal academic poster template with three columns, equations, charts, and takeaways" width="100%">
+      </a>
+      <br>
+      <strong>Horizontal poster template</strong> · <sub>The same system on a 1160 × 860 mm landscape canvas</sub>
+    </td>
+  </tr>
 </table>
 
 ## A personal note
@@ -76,8 +85,8 @@ nothing.
 Anyway, this repository gives you a nice starting point. You can start with it
 and modify it however you wish.
 
-For posters, there is only one template. Use it for university presentations or
-conferences.
+For posters, there are vertical and horizontal versions. Use whichever format
+fits your university presentation, conference, or printing requirements.
 
 For slides, there are two types. I personally use the simpler version when it is
 a technical presentation, usually for colleagues or collaborators. Therefore,
@@ -93,19 +102,25 @@ workshops, and so on. Again, use it however you wish.
 
 | Format | Character | Best suited for | Open it |
 | --- | --- | --- | --- |
-| **Academic poster** | Editorial, structured, and print-ready | Conference posters, workshops, research showcases, machine-learning and technical projects | [Source](templates/poster/index.html) · [Blank PDF](templates/poster/poster.pdf) · [DISeL example](examples/poster-disel/index.html) · [PDF](examples/poster-disel/poster.pdf) · [LoRA example](examples/poster-lora/index.html) · [PDF](examples/poster-lora/poster.pdf) |
+| **Vertical poster** | Editorial, structured, and print-ready | Portrait conference posters, workshops, research showcases, machine-learning and technical projects | [Source](templates/poster-vertical/index.html) · [PDF](templates/poster-vertical/poster.pdf) · [DISeL example](examples/poster-disel/index.html) · [PDF](examples/poster-disel/poster.pdf) · [LoRA example](examples/poster-lora/index.html) · [PDF](examples/poster-lora/poster.pdf) |
+| **Horizontal poster** | Wide, structured, and print-ready | Landscape poster sessions, wide display boards, university presentations, and technical showcases | [Source](templates/poster-horizontal/index.html) · [PDF](templates/poster-horizontal/poster.pdf) |
 | **Elegant mathematical slides** | Quiet, precise, and theorem-oriented | Professional technical talks, research seminars, meetings with colleagues, and discussions with collaborators | [Source](templates/slides-math/index.html) · [PDF](templates/slides-math/slides.pdf) |
 | **Visual transformer slides** | Colorful, diagram-rich, and progressive | Courses, tutorials, lectures, student audiences, and general technical explanations | [Source](templates/slides-transformer/index.html) · [PDF](templates/slides-transformer/slides.pdf) |
 
-### The academic poster
+### The academic poster templates
 
-The poster is an **860 × 1160 mm portrait canvas** designed for real academic
-use. It provides a strong title area, a three-column research narrative,
-theorem and equation callouts, figure panels, takeaways, affiliations, and room
-for project links. It works well for machine-learning conferences, scientific
-workshops, lab presentations, and technical project exhibitions.
+The poster comes in an **860 × 1160 mm vertical version** and a **1160 × 860 mm
+horizontal version**. Both provide a strong title area, a three-column research
+narrative, theorem and equation callouts, figure panels, takeaways,
+affiliations, and room for project links.
 
-The blank version is ready to adapt. Two complete examples show how the same
+Both folders use the same base theme. The orientation is an explicit parameter
+on the root HTML element: `data-orientation="vertical"` or
+`data-orientation="horizontal"`. You can also add `?orientation=vertical` or
+`?orientation=horizontal` to the URL for a quick preview without editing the
+source.
+
+The blank versions are ready to adapt. Two complete examples show how the same
 system handles different research stories: the DISeL poster combines dense
 mathematics, plots, diagrams, and experimental results, while the LoRA versus
 Full Fine-Tuning poster emphasizes theorem statements, excess-risk bounds, and
@@ -178,10 +193,12 @@ The slide decks render mathematics locally with KaTeX, using familiar notation:
   HTML, CSS, and JavaScript.
 - **Two deliberate slide personalities.** Choose restraint for a research room
   or visual momentum for a classroom.
+- **Two poster orientations.** Start with a portrait or landscape canvas while
+  keeping the same components, typography, and visual system.
 - **Publication-quality mathematics.** KaTeX and MathJax keep notation sharp and
   selectable instead of flattening it into screenshots.
-- **Exact canvases.** Slides use a fixed 1280 × 720, 16:9 layout; the poster uses
-  a fixed print canvas.
+- **Exact canvases.** Slides use a fixed 1280 × 720, 16:9 layout; posters use
+  860 × 1160 mm vertical or 1160 × 860 mm horizontal print canvases.
 - **Keyboard navigation.** Arrow keys, Page Up/Page Down, Space, Home, and End
   work without a presentation framework.
 - **Direct links.** A URL hash such as `#6` opens a specific slide.
@@ -204,24 +221,28 @@ cd academic-slide-poster-template
 Open the format you want:
 
 ```text
-http://localhost:8000/templates/poster/
+http://localhost:8000/templates/poster-vertical/
+http://localhost:8000/templates/poster-horizontal/
 http://localhost:8000/templates/slides-math/
 http://localhost:8000/templates/slides-transformer/
 ```
 
-Then edit the corresponding `index.html` and `style.css` or `deck.css`. The
-browser refreshes immediately, which makes layout iteration fast and concrete.
+Then edit the corresponding HTML and CSS files. The browser refreshes
+immediately, which makes layout iteration fast and concrete.
 
 ## Customization guide
 
 ### For a new poster
 
-1. Copy `templates/poster/` into a new project folder.
-2. Replace the title, authors, affiliations, summary, and section content.
-3. Add figures under an `assets/` or `figures/` directory.
-4. Adjust the palette through the CSS custom properties at the top of
-   `style.css`.
-5. Keep the dimensions in `@page` and `html, body` synchronized.
+1. Copy `templates/poster-vertical/` or `templates/poster-horizontal/` into a new
+   project folder.
+2. Keep `shared/poster-system/` with it so the common theme and orientation
+   setting remain available.
+3. Replace the title, authors, affiliations, summary, and section content.
+4. Add figures under an `assets/` or `figures/` directory.
+5. Adjust the palette through the CSS custom properties in
+   `shared/poster-system/theme.css`.
+6. Keep `data-orientation` and the local `@page` rule on the same orientation.
 
 ### For an elegant technical talk
 
@@ -259,7 +280,13 @@ Render only the slide decks:
 Render one poster:
 
 ```sh
-./scripts/render-poster.sh templates/poster/index.html templates/poster/poster.pdf
+./scripts/render-poster.sh templates/poster-horizontal/index.html templates/poster-horizontal/poster.pdf
+```
+
+The optional third argument overrides the template orientation during export:
+
+```sh
+./scripts/render-poster.sh templates/poster-vertical/index.html /tmp/poster-horizontal.pdf horizontal
 ```
 
 The slide renderer requires a Chromium-based browser and `pdfunite` from
@@ -275,13 +302,16 @@ The complete source-to-output list is maintained in
 ```text
 .
 ├── templates/
-│   ├── poster/                       # Blank academic poster
+│   ├── poster-vertical/              # Blank portrait poster
+│   ├── poster-horizontal/            # Blank landscape poster
 │   ├── slides-math/                  # Elegant mathematical deck
 │   └── slides-transformer/           # Populated visual transformer deck
 ├── examples/
 │   ├── poster-disel/                 # Complete DISeL poster example
 │   └── poster-lora/                  # Complete LoRA theory poster example
-├── shared/slide-system/              # Runtime, print CSS, fonts, and KaTeX
+├── shared/
+│   ├── poster-system/                # Shared poster theme and orientation logic
+│   └── slide-system/                 # Runtime, print CSS, fonts, and KaTeX
 ├── docs/
 │   ├── assets/                       # README artwork and rendered previews
 │   ├── PUBLISHING.md                 # Public-release checklist

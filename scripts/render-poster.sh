@@ -1,13 +1,23 @@
 #!/usr/bin/env sh
 set -eu
 
-if [ "$#" -gt 2 ]; then
-  echo "Usage: $0 [path/to/index.html] [path/to/output.pdf]" >&2
+if [ "$#" -gt 3 ]; then
+  echo "Usage: $0 [path/to/index.html] [path/to/output.pdf] [vertical|horizontal]" >&2
   exit 2
 fi
 
-input_file=${1:-templates/poster/index.html}
+input_file=${1:-templates/poster-vertical/index.html}
 output_file=${2:-$(dirname "$input_file")/poster.pdf}
+orientation=${3:-}
+
+case "$orientation" in
+  "") orientation_query="" ;;
+  vertical|horizontal) orientation_query="?orientation=$orientation" ;;
+  *)
+    echo "Orientation must be 'vertical' or 'horizontal'." >&2
+    exit 2
+    ;;
+esac
 
 if [ -n "${CHROME_BIN:-}" ]; then
   chrome_bin=$CHROME_BIN
@@ -47,6 +57,6 @@ output_path="$output_dir/$(basename "$output_file")"
   --virtual-time-budget=5000 \
   --no-pdf-header-footer \
   --print-to-pdf="$output_path" \
-  "file://$input_path" >/dev/null 2>&1
+  "file://$input_path$orientation_query" >/dev/null 2>&1
 
 echo "$output_path"

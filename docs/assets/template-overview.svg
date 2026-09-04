@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
   <title id="title">Academic poster and slide template overview</title>
-  <desc id="desc">A portrait research poster beside mathematical and visual teaching slides.</desc>
+  <desc id="desc">Research posters with vertical and horizontal options beside mathematical and visual teaching slides.</desc>
   <rect width="1200" height="520" rx="24" fill="#f3f0e9"/>
   <g transform="translate(72 54)">
     <rect width="260" height="412" rx="5" fill="#fff" stroke="#d7dce5"/>

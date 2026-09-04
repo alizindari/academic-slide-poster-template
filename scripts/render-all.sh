@@ -5,7 +5,8 @@ repo_dir=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_dir"
 
 ./scripts/render-slides.sh
-./scripts/render-poster.sh templates/poster/index.html templates/poster/poster.pdf
+./scripts/render-poster.sh templates/poster-vertical/index.html templates/poster-vertical/poster.pdf
+./scripts/render-poster.sh templates/poster-horizontal/index.html templates/poster-horizontal/poster.pdf
 ./scripts/render-poster.sh examples/poster-disel/index.html examples/poster-disel/poster.pdf
 ./scripts/render-poster.sh examples/poster-lora/index.html examples/poster-lora/poster.pdf
 

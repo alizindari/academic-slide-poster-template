@@ -20,6 +20,6 @@ The local `.private/` directory is a safety holding area and is intentionally ab
 
 ## What belongs in Git
 
-Commit reusable source, small example assets, documentation, license files, and the four rendered poster/slide PDFs listed in `RENDERED_OUTPUTS.md`. Keep private notes, unpublished manuscripts, raw experiment dumps, and third-party reference PDFs outside the public history.
+Commit reusable source, small example assets, documentation, license files, and the six rendered poster/slide PDFs listed in `RENDERED_OUTPUTS.md`. Keep private notes, unpublished manuscripts, raw experiment dumps, and third-party reference PDFs outside the public history.
 
 When renderable source changes, regenerate and commit its neighboring PDF in the same change.

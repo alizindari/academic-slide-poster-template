@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" data-orientation="horizontal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your Horizontal Poster Title</title>
+  <link rel="stylesheet" href="../../shared/poster-system/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        macros: {
+          x: '\\mathbf{x}',
+          y: '\\mathbf{y}',
+          W: '\\mathbf{W}',
+          E: '\\mathbb{E}',
+          R: '\\mathbb{R}'
+        }
+      },
+      chtml: {
+        fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2'
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script src="../../shared/poster-system/orientation.js"></script>
+</head>
+<body class="poster-template">
+  <article class="poster">
+    <header class="poster-header">
+      <div>
+        <p class="kicker">Conference · Year</p>
+        <h1>Your clear, informative poster title</h1>
+        <p class="subtitle">A short subtitle can explain the scope or contribution</p>
+        <p class="authors"><strong>Your Name</strong><sup>1</sup> · Collaborator Name<sup>2</sup></p>
+        <p class="affiliations"><sup>1</sup>Your University · <sup>2</sup>Partner Institution</p>
+        <p class="contact">github.com/username/project · name@example.edu</p>
+      </div>
+      <div class="poster-header__side">
+        <img src="assets/logo-placeholder.svg" alt="Your institution logo">
+        <div class="tag-row"><span>Topic</span><span>Method</span><span>Result</span></div>
+      </div>
+    </header>
+
+    <section class="summary-strip">
+      <strong>TL;DR</strong>
+      <p>State the problem, your central idea, and the most important result in two or three sentences. A reader should understand the contribution from this strip alone.</p>
+    </section>
+
+    <main class="poster-columns">
+      <div class="poster-column">
+        <section class="card">
+          <h2><span>1</span>Motivation</h2>
+          <p>Describe the problem and why it matters. Keep paragraphs short enough to scan from a distance.</p>
+          <div class="callout"><strong>Research question.</strong> What precise gap does this work address?</div>
+          <ul>
+            <li>Give the reader the minimum necessary context.</li>
+            <li>Emphasize the limitation of existing approaches.</li>
+            <li>End with the question your method answers.</li>
+          </ul>
+        </section>
+
+        <section class="card card--accent">
+          <h2><span>2</span>Problem formulation</h2>
+          <p>Use display mathematics only for equations that carry the argument.</p>
+          <div class="equation-box">
+            $$\hat{\y}=f_\theta(\x), \qquad
+              \theta^\star=\arg\min_{\theta}\;\E_{(\x,\y)\sim p}\bigl[\ell(f_\theta(\x),\y)\bigr].$$
+          </div>
+          <h3>Assumptions</h3>
+          <p>Define notation near its first use and explicitly state the setting under which the result holds.</p>
+          <div class="theorem-box">
+            <strong>Main statement</strong>
+            <p>Place one memorable theorem, claim, or design principle here.</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2><span>3</span>Study design</h2>
+          <div class="process" aria-label="Three-step study design">
+            <div><b>Data</b><small>Describe inputs</small></div>
+            <i>→</i>
+            <div><b>Method</b><small>Describe procedure</small></div>
+            <i>→</i>
+            <div><b>Measure</b><small>Define outcome</small></div>
+          </div>
+          <p class="caption"><b>Figure 1.</b> Use diagrams to communicate structure faster than prose.</p>
+        </section>
+
+        <section class="card card--gold">
+          <h2><span>4</span>Contributions</h2>
+          <div class="contribution-grid">
+            <div><b>01</b><p>One new idea or formulation</p></div>
+            <div><b>02</b><p>One empirical or theoretical finding</p></div>
+            <div><b>03</b><p>One reusable artifact or implication</p></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2><span>5</span>Reproducibility</h2>
+          <div class="checklist">
+            <span>✓ Data or generation procedure</span>
+            <span>✓ Configurations and random seeds</span>
+            <span>✓ Evaluation scripts and raw summaries</span>
+            <span>✓ Compute and dependency details</span>
+          </div>
+          <p class="caption">Link to durable artifacts or a reproducibility appendix.</p>
+        </section>
+      </div>
+
+      <div class="poster-column">
+        <section class="card card--gold">
+          <h2><span>6</span>Method</h2>
+          <p>Give the method a single visual center. The reader should see inputs, transformations, and outputs immediately.</p>
+          <div class="method-diagram">
+            <div class="node">Input<br><b>$\x$</b></div>
+            <div class="arrow">→</div>
+            <div class="method-block"><small>YOUR METHOD</small><b>$f_\theta(\x)$</b><span>One-line description</span></div>
+            <div class="arrow">→</div>
+            <div class="node node--output">Output<br><b>$\hat{\y}$</b></div>
+          </div>
+          <h3>Design choices</h3>
+          <ul>
+            <li><strong>Choice A.</strong> Explain what it enables.</li>
+            <li><strong>Choice B.</strong> Explain the relevant tradeoff.</li>
+            <li><strong>Choice C.</strong> Explain how it is evaluated.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2><span>7</span>Main result</h2>
+          <div class="chart-placeholder" role="img" aria-label="Placeholder bar chart">
+            <div class="chart-y">Metric ↑</div>
+            <div class="bars">
+              <div><i style="height:44%"></i><span>Baseline</span></div>
+              <div><i style="height:65%"></i><span>Method A</span></div>
+              <div class="bars__focus"><i style="height:88%"></i><span>Ours</span></div>
+              <div><i style="height:70%"></i><span>Method B</span></div>
+            </div>
+          </div>
+          <p class="caption"><b>Figure 2.</b> Replace this placeholder with an SVG, PNG, or PDF-derived image. Explain the conclusion, not every visual detail.</p>
+          <div class="result-number"><strong>+12%</strong><span>Summarize the primary improvement with one defensible number.</span></div>
+        </section>
+
+        <section class="card">
+          <h2><span>8</span>Quantitative comparison</h2>
+          <table>
+            <thead><tr><th>Approach</th><th>Metric A ↑</th><th>Metric B ↓</th></tr></thead>
+            <tbody>
+              <tr><td>Baseline</td><td>0.72</td><td>1.40</td></tr>
+              <tr><td>Method A</td><td>0.79</td><td>1.18</td></tr>
+              <tr class="best"><td>Proposed method</td><td><strong>0.84</strong></td><td><strong>0.96</strong></td></tr>
+            </tbody>
+          </table>
+          <p class="caption"><b>Table 1.</b> Example values are placeholders; replace them with verified results.</p>
+        </section>
+
+        <section class="card card--accent">
+          <h2><span>9</span>Ablation study</h2>
+          <div class="ablation-grid" role="img" aria-label="Placeholder ablation results">
+            <div><span>Full method</span><i style="--score: 92%"></i><b>0.84</b></div>
+            <div><span>Without A</span><i style="--score: 73%"></i><b>0.77</b></div>
+            <div><span>Without B</span><i style="--score: 59%"></i><b>0.72</b></div>
+          </div>
+          <p class="caption"><b>Figure 3.</b> Use ablations to connect design choices to observed behavior.</p>
+        </section>
+
+        <section class="card">
+          <h2><span>10</span>Qualitative example</h2>
+          <div class="before-after">
+            <div><small>BEFORE</small><p>Show a representative baseline output or failure.</p></div>
+            <i>→</i>
+            <div><small>AFTER</small><p>Show how the proposed method changes it.</p></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="poster-column">
+        <section class="card card--accent">
+          <h2><span>11</span>Analysis</h2>
+          <p>Use this column for interpretation, diagnostics, ablations, or a second result.</p>
+          <div class="mini-panels">
+            <div><b>Condition A</b><span class="spark spark--a"></span><small>Short conclusion</small></div>
+            <div><b>Condition B</b><span class="spark spark--b"></span><small>Short conclusion</small></div>
+          </div>
+          <ul>
+            <li>Explain what changes across conditions.</li>
+            <li>Connect the evidence back to the research question.</li>
+            <li>Separate observation from speculation.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2><span>12</span>Failure modes</h2>
+          <div class="failure-list">
+            <div><b>A</b><p><strong>Where it fails.</strong> Name a concrete condition and show an example.</p></div>
+            <div><b>B</b><p><strong>Why it fails.</strong> Separate evidence from a plausible explanation.</p></div>
+            <div><b>C</b><p><strong>What mitigates it.</strong> State the practical response.</p></div>
+          </div>
+        </section>
+
+        <section class="card card--gold">
+          <h2><span>13</span>Limitations &amp; scope</h2>
+          <p>A strong poster states where the result applies and what remains unresolved.</p>
+          <div class="two-up">
+            <div><strong>Supported</strong><p>List the setting directly covered by the evidence.</p></div>
+            <div><strong>Future work</strong><p>List the next important validation or extension.</p></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2><span>14</span>Next steps</h2>
+          <div class="next-steps">
+            <div><b>Now</b><span>Validate the central claim</span></div>
+            <i>→</i>
+            <div><b>Next</b><span>Test the boundary condition</span></div>
+            <i>→</i>
+            <div><b>Later</b><span>Study deployment at scale</span></div>
+          </div>
+        </section>
+
+        <section class="takeaways">
+          <h2><span>★</span>Takeaways</h2>
+          <ol>
+            <li>Restate the problem in one short sentence.</li>
+            <li>State the core methodological contribution.</li>
+            <li>Give the strongest supported result.</li>
+            <li>Tell the reader what to remember or do next.</li>
+          </ol>
+          <div class="qr-placeholder" aria-label="QR code placeholder">QR</div>
+          <p class="takeaways__link">github.com/username/project</p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="poster-footer">
+      <span>Your University · Your Lab</span>
+      <strong>Project or paper title</strong>
+      <span>Funding acknowledgement</span>
+    </footer>
+  </article>
+</body>
+</html>
