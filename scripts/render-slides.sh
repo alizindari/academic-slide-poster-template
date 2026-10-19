@@ -8,5 +8,6 @@ cd "$repo_dir"
 
 "$renderer" templates/slides-math/index.html templates/slides-math/slides.pdf
 "$renderer" templates/slides-transformer/index.html templates/slides-transformer/slides.pdf
+bash templates/slides-qe/build.sh
 
 echo "Rendered every HTML slide deck beside its source."

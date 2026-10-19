@@ -20,6 +20,11 @@ The local `.private/` directory is a safety holding area and is intentionally ab
 
 ## What belongs in Git
 
-Commit reusable source, small example assets, documentation, license files, and the six rendered poster/slide PDFs listed in `RENDERED_OUTPUTS.md`. Keep private notes, unpublished manuscripts, raw experiment dumps, and third-party reference PDFs outside the public history.
+Commit reusable source, small example assets, documentation, license files, and the eight rendered poster/slide PDFs listed in `RENDERED_OUTPUTS.md`. Keep private notes, unpublished manuscripts, raw experiment dumps, and third-party reference PDFs outside the public history.
+
+The QE template includes the supplied talk's research overview and speaker
+notes, including a citation of an unpublished manuscript, but not the manuscript
+itself. Review talk content and notes for disclosure before publishing your own
+adaptation. Both its presentation and handout PDF belong beside the source.
 
 When renderable source changes, regenerate and commit its neighboring PDF in the same change.

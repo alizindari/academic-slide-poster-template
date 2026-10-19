@@ -1,0 +1,77 @@
+{
+  "retrieved": "2026-09-29",
+  "purpose": "Four source-dataset examples for the QE appendix; record contents are unchanged. Slide typesetting normalizes math and line breaks.",
+  "records": [
+    {
+      "dataset": "allenai/ai2_arc",
+      "config": "ARC-Easy",
+      "split": "test",
+      "row_idx": 15,
+      "revision": "210d026faf9955653af8916fad021475a3f00453",
+      "license_metadata": [
+        "cc-by-sa-4.0"
+      ],
+      "row": {
+        "id": "Mercury_SC_401777",
+        "question": "Which process best explains how the Grand Canyon became so wide?",
+        "choices": {
+          "text": [
+            "folding",
+            "erosion",
+            "deposition",
+            "sedimentation"
+          ],
+          "label": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        "answerKey": "B"
+      }
+    },
+    {
+      "dataset": "allenai/winogrande",
+      "config": "winogrande_xl",
+      "split": "validation",
+      "row_idx": 0,
+      "revision": "01e74176c63542e6b0bcb004dcdea22d94fb67b5",
+      "license_metadata": null,
+      "row": {
+        "sentence": "Sarah was a much better surgeon than Maria so _ always got the easier cases.",
+        "option1": "Sarah",
+        "option2": "Maria",
+        "answer": "2"
+      }
+    },
+    {
+      "dataset": "meta-math/MetaMathQA",
+      "config": "default",
+      "split": "train",
+      "row_idx": 9,
+      "revision": "aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18",
+      "license_metadata": "mit",
+      "row": {
+        "type": "GSM_AnsAug",
+        "query": "Dave bought 8 books about animals, 6 books about outer space, and 3 books about trains to keep him busy over the holidays. Each book cost $6. How much did Dave spend on the books?",
+        "original_question": "Dave bought 8 books about animals, 6 books about outer space, and 3 books about trains to keep him busy over the holidays. Each book cost $6. How much did Dave spend on the books?",
+        "response": "Dave bought a total of 8 + 6 + 3 = 17 books.\nEach book cost $6, so Dave spent a total of 17 x $6 = $102 on the books.\n#### 102\nThe answer is: 102"
+      }
+    },
+    {
+      "dataset": "meta-math/MetaMathQA",
+      "config": "default",
+      "split": "train",
+      "row_idx": 3,
+      "revision": "aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18",
+      "license_metadata": "mit",
+      "row": {
+        "type": "MATH_AnsAug",
+        "query": "Convert $10101_3$ to a base 10 integer.",
+        "original_question": "Convert $10101_3$ to a base 10 integer.",
+        "response": "$10101_3 = 1 \\cdot 3^4 + 0 \\cdot 3^3 + 1 \\cdot 3^2 + 0 \\cdot 3^1 + 1 \\cdot 3^0 = 81 + 9 + 1 = \\boxed{91}$.\nThe answer is: 91"
+      }
+    }
+  ]
+}

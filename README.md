@@ -2,7 +2,7 @@
 
 # Academic Poster & Slide Templates
 
-This repository includes two poster templates, two poster examples, and two
+This repository includes two poster templates, two poster examples, and three
 slide styles.
 
 [![HTML](https://img.shields.io/badge/HTML5-source-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
@@ -52,6 +52,12 @@ opens its full PDF.
       </a>
       <br>
       <strong>Visual transformer slides</strong> · <sub>Color, diagrams, and a teaching narrative</sub>
+      <br><br>
+      <a href="templates/slides-qe/slides-handout.pdf#page=14">
+        <img src="docs/assets/previews/slides-qe.png" alt="Ali Zindari's PhD QE slide with mathematical notation, a gate matrix, and a sigmoid diagram on a warm background" width="100%">
+      </a>
+      <br>
+      <strong>PhD qualifying-exam slides</strong> · <sub>Slide 14: gates and sigmoid, from my QE talk</sub>
     </td>
   </tr>
   <tr>
@@ -96,15 +102,19 @@ and modify it however you wish.
 For posters, there are vertical and horizontal versions. Use whichever format
 fits your university presentation, conference, or printing requirements.
 
-For slides, there are two types. I personally use the simpler version when it is
+For slides, there are three types. I personally use the simpler version when it is
 a technical presentation, usually for colleagues or collaborators. Therefore,
 it is not colorful or fancy. Simple, elegant, and clean slides with a nice font
 are more than enough, especially when the mathematics font, which is the most
 important part, is right.
 
-The other version is fancier, with colors and shapes. I would use it for a
+The visual version is fancier, with colors and shapes. I would use it for a
 course, perhaps, or for presenting something to a general audience, schools,
 workshops, and so on. Again, use it however you wish.
+
+I have also included my PhD qualifying-exam slides. They use a warm background,
+burgundy accents, and step-by-step reveals, with speaker notes and an appendix.
+The content is included so you can see how I used the template for a full talk.
 
 ## What is included
 
@@ -114,6 +124,7 @@ workshops, and so on. Again, use it however you wish.
 | **Horizontal poster** | Wide, structured, and print-ready | Landscape poster sessions, wide display boards, university presentations, and technical showcases | [Source](templates/poster-horizontal/index.html) · [PDF](templates/poster-horizontal/poster.pdf) |
 | **Elegant mathematical slides** | Quiet, precise, and theorem-oriented | Professional technical talks, research seminars, meetings with colleagues, and discussions with collaborators | [Source](templates/slides-math/index.html) · [PDF](templates/slides-math/slides.pdf) |
 | **Visual transformer slides** | Colorful, diagram-rich, and progressive | Courses, tutorials, lectures, student audiences, and general technical explanations | [Source](templates/slides-transformer/index.html) · [PDF](templates/slides-transformer/slides.pdf) |
+| **PhD qualifying-exam slides** | Warm, restrained, and diagram-led, with step-by-step reveals | Qualifying exams, research overviews, and longer talks with backup slides | [Source](templates/slides-qe/index.html) · [Presentation PDF](templates/slides-qe/slides.pdf) · [Handout PDF](templates/slides-qe/slides-handout.pdf) |
 
 ### The academic poster templates
 
@@ -172,6 +183,20 @@ for technical material. The included 15-slide sequence develops self-attention
 from token representations through queries, keys, values, causal masking,
 attention weights, value mixing, and the complete masked-attention equation.
 
+### The PhD qualifying-exam deck
+
+This is my populated QE presentation, *Learning When to Adapt: Fine-Tuning
+with Less Forgetting*. It keeps the original research content, equations,
+figures, and appendix. The design uses TeX Gyre Termes text, a warm off-white
+canvas, charcoal text, and burgundy accents.
+
+The deck includes 23 talk slides, a references page, an appendix divider, and
+14 backup slides. Content appears in groups as you advance. Speaker notes,
+timing estimates, and a BibTeX-generated bibliography are included. There are
+two PDF exports: one page per reveal step for presenting, and one complete
+page per slide for reading. See the [template guide](templates/slides-qe/README.md)
+for controls and customization.
+
 ## Typography and mathematics
 
 Typography is part of the technical design, not decoration added afterward. I
@@ -183,6 +208,7 @@ coherent document.
 | **Poster** | Times New Roman, Times, or Liberation Serif | MathJax with TeX-style mathematical fonts | Familiar academic texture, compact enough for dense poster content, and highly legible in print |
 | **Elegant slides** | Computer Modern Unicode: Roman, Bold, Italic, and Bold Italic | Locally bundled KaTeX fonts | A crisp paper-like voice that feels natural around theorems, proofs, and equations |
 | **Visual slides** | TeX Gyre Termes | Locally bundled KaTeX fonts | Formal enough for technical teaching while remaining strong beside diagrams and color |
+| **QE slides** | TeX Gyre Termes | Locally bundled KaTeX fonts | The same text and math families as the visual deck, with a quieter palette for a research presentation |
 
 I think Computer Modern Unicode and TeX Gyre Termes are particularly beautiful
 for academic presentations: they have real mathematical character, excellent
@@ -207,8 +233,8 @@ The slide decks render mathematics locally with KaTeX, using familiar notation:
 
 - **Real source files.** Content, layout, and interaction live in understandable
   HTML, CSS, and JavaScript.
-- **Two deliberate slide personalities.** Choose restraint for a research room
-  or visual momentum for a classroom.
+- **Three slide styles.** Choose a mathematical talk, a visual tutorial, or a
+  QE presentation with reveals, notes, and backup slides.
 - **Two poster orientations.** Start with a portrait or landscape canvas while
   keeping the same components, typography, and visual system.
 - **Publication-quality mathematics.** KaTeX and MathJax keep notation sharp and
@@ -241,6 +267,7 @@ http://localhost:8000/templates/poster-vertical/
 http://localhost:8000/templates/poster-horizontal/
 http://localhost:8000/templates/slides-math/
 http://localhost:8000/templates/slides-transformer/
+http://localhost:8000/templates/slides-qe/
 ```
 
 Then edit the corresponding HTML and CSS files. The browser refreshes
@@ -278,6 +305,15 @@ immediately, which makes layout iteration fast and concrete.
 4. Introduce one conceptual transformation per slide.
 5. Keep diagrams in HTML/CSS whenever possible so they remain sharp at any size.
 
+### For a qualifying exam or research overview
+
+1. Copy `templates/slides-qe/` and keep the shared slide-system paths working.
+2. Edit the content, notes, and timing estimates in `index.html`.
+3. Update reveal groups in `reveals.js` when changing slide layouts.
+4. Replace the bibliography records in `references.bib` and update their order
+   in `scripts/export-references.py`.
+5. Run `bash templates/slides-qe/build.sh` to regenerate both PDFs and the notes.
+
 ## PDF export
 
 Every rendered document is stored beside its source. Regenerate the complete
@@ -306,7 +342,9 @@ The optional third argument overrides the template orientation during export:
 ```
 
 The slide renderer requires a Chromium-based browser and `pdfunite` from
-Poppler. Set `CHROME_BIN=/path/to/chromium` when automatic browser detection is
+Poppler. The QE deck additionally requires Node.js 22+, Python 3, and BibTeX
+(TeX Live/MacTeX); its build exports both presentation and handout PDFs.
+Set `CHROME_BIN=/path/to/chromium` when automatic browser detection is
 not appropriate. Poster equations load through MathJax, so poster rendering
 requires an internet connection.
 
@@ -321,7 +359,8 @@ The complete source-to-output list is maintained in
 │   ├── poster-vertical/              # Blank portrait poster
 │   ├── poster-horizontal/            # Blank landscape poster
 │   ├── slides-math/                  # Elegant mathematical deck
-│   └── slides-transformer/           # Populated visual transformer deck
+│   ├── slides-transformer/           # Populated visual transformer deck
+│   └── slides-qe/                    # Ali Zindari's PhD QE deck, reveals and notes
 ├── examples/
 │   ├── poster-disel/                 # Complete DISeL poster example
 │   └── poster-lora/                  # Complete LoRA theory poster example
@@ -343,6 +382,11 @@ PDFs. Unpublished research notes, private source material, raw experiment dumps,
 and third-party reference PDFs are excluded. The mathematical slides use
 standard optimization material, and the populated transformer template contains
 only the intended 15-slide self-attention lesson.
+
+The QE template preserves the supplied presentation, including a brief
+overview and citation of the adaptation-and-retention manuscript. No manuscript
+PDF is bundled. Its research figures and dataset examples retain the credits
+in [references.md](templates/slides-qe/references.md).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request and
 [docs/PUBLISHING.md](docs/PUBLISHING.md) before publishing a fork. The original

@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learning When to Adapt — Ali Zindari</title>
+  <link rel="stylesheet" href="../../shared/slide-system/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="../../shared/slide-system/theme.css">
+  <link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<main class="deck" data-slide-deck>
+
+<!-- WORKING DECK: 23 talk slides + references + an appendix divider and 13 backup slides. -->
+<section id="1" class="slide is-active" data-title="Learning When to Adapt" data-seconds="15">
+<div class="opening-cover">
+<h1>Learning When to Adapt</h1>
+<p class="opening-subtitle">Fine-Tuning with Less Forgetting</p>
+<div class="opening-author"><strong>Ali Zindari</strong><span>CISPA · Saarland University</span></div>
+<p class="opening-supervisor">Supervisor: Sebastian U. Stich</p>
+</div>
+<div class="slide__number">1 / 24</div>
+<aside class="speaker-notes">Introduce yourself and the talk title, then show the three-paper overview on the next slide. Say that these are three projects from your Ph.D. work and that today's main presentation is Learning When to Adapt, the practical DISeL paper. The coauthors are listed on that overview; the title slide keeps the presenter, affiliation and supervisor. Give the accessible background next, then focus on the method and evidence. Brief summaries of the other two papers and three future directions close the talk. I was the main contributor to these projects.</aside>
+</section>
+
+<section id="2" class="slide papers-slide" data-title="Three papers on fine-tuning" data-seconds="30">
+<h1 class="slide__title">Three papers on fine-tuning</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="paper-shelf">
+<article class="paper-sheet paper-sheet--focus"><span class="paper-fold" aria-hidden="true"></span><p class="paper-date">2026</p><h2>Learning When<br>to Adapt</h2><div class="paper-authors"><span>Ali Zindari</span><span>Xiaowen Jiang</span><span>Rotem Mulayoff</span><span>Sebastian U. Stich</span></div><div class="paper-record"><span>Under review</span><a href="https://arxiv.org/abs/2605.19028">[Paper]</a></div><p class="paper-role">DISeL · Main focus today</p></article>
+<article class="paper-sheet"><span class="paper-fold" aria-hidden="true"></span><p class="paper-date">2026</p><h2 class="paper-title-compact"><span>LoRA vs. Full Fine-Tuning:</span><br>A Theoretical Perspective</h2><div class="paper-authors"><span>Ali Zindari*</span><span>Rotem Mulayoff*</span><span>Sebastian U. Stich</span><small>* Equal contribution</small></div><div class="paper-record"><span>Under review</span><a href="https://arxiv.org/abs/2605.19018">[Paper]</a></div><p class="paper-role">When low rank helps</p></article>
+<article class="paper-sheet"><span class="paper-fold" aria-hidden="true"></span><p class="paper-date">2026</p><h2>Theory of Adaptation<br>and Retention</h2><div class="paper-authors"><span>Ali Zindari</span><span>Rotem Mulayoff</span><span>Bruno Loureiro</span><span>Sebastian U. Stich</span></div><div class="paper-record"><span>Under review</span><span>[Manuscript]</span></div><p class="paper-role">Limits of learning and retention</p></article>
+</div>
+</div><div class="slide__number">2 / 24</div>
+<aside class="speaker-notes">At the beginning of the talk, introduce these three written papers and their coauthors. State that the main presentation focuses on Learning When to Adapt, the practical DISeL paper highlighted on the left. Briefly acknowledge the authors listed on each card. The other two papers will receive one short overview each after the DISeL results. The next studies when low-rank updates generalize better than full fine-tuning. The third studies fundamental adaptation and retention limits and learning input-dependent gates. First two author lists and first arXiv dates were verified on 8 October 2026: Learning When to Adapt, Ali Zindari, Xiaowen Jiang, Rotem Mulayoff, Sebastian U. Stich; LoRA vs. Full Fine-Tuning: A Theoretical Perspective, Ali Zindari, Rotem Mulayoff, Sebastian U. Stich. Both were first submitted to arXiv on 18 May 2026. The CV records equal contribution for Ali and Rotem on LoRA vs. Full Fine-Tuning. The theory manuscript author order was supplied by Ali on 8 October 2026: Ali Zindari, Rotem Mulayoff, Bruno Loureiro, Sebastian U. Stich. Bruno's spelling was checked against his personal research website. Its year is 2026, the year of the supplied manuscript; no exact release date is asserted. All three cards show only the year 2026 and the status Under review, as requested and confirmed by Ali on 8 October 2026. No venue or acceptance is asserted. Sources: https://arxiv.org/abs/2605.19028 ; https://arxiv.org/abs/2605.19018 ; https://brloureiro.github.io/ ; docs/main.tex; papers/theory_adaptation_retention.pdf; user-provided authorship.</aside>
+</section>
+
+<section id="3" class="slide pretraining-slide" data-title="Pre-training: the first stage of LLM training" data-seconds="60">
+<h1 class="slide__title">Pre-training: the first stage of LLM training</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="intro-training-diagram" role="img" aria-label="Large text collections across many topics are used to train a model from scratch. Pre-training needs a lot of compute and time. It produces a general base model with language understanding and general knowledge, rather than a model tailored to one task. This costly base can then be reused for many tasks.">
+<svg viewBox="0 0 1144 400" aria-hidden="true">
+<g class="pretrain-corpus corpus-drawing" transform="translate(0 9.5)">
+<path class="corpus-sheet" d="M88 162H139L156 179V283H88Z"/>
+<path d="M139 162V179H156M101 194H143M101 207H143M101 220H134M101 245H143M101 258H136"/>
+<path class="corpus-sheet" d="M196 162H247L264 179V283H196Z"/>
+<path d="M247 162V179H264M209 194H251M209 207H251M209 220H242M209 245H251M209 258H244"/>
+<path class="corpus-sheet" d="M135 130H197L217 150V267H135Z"/>
+<path d="M197 130V150H217M150 167H202M150 181H202M150 195H189M150 221H202M150 235H195M150 249H182"/>
+</g>
+<path d="M302 216H836M825 206L836 216L825 226" class="primer-training-arrow pretrain-process"/>
+<g class="primer-network pretrain-model" transform="translate(868 148)"><path d="M8 35L94 2"/><path d="M8 35L94 68"/><path d="M8 35L94 134"/><path d="M8 100L94 2"/><path d="M8 100L94 68"/><path d="M8 100L94 134"/><path d="M94 2L180 35"/><path d="M94 2L180 100"/><path d="M94 68L180 35"/><path d="M94 68L180 100"/><path d="M94 134L180 35"/><path d="M94 134L180 100"/><circle cx="8" cy="35" r="8"/><circle cx="8" cy="100" r="8"/><circle cx="94" cy="2" r="8"/><circle cx="94" cy="68" r="8"/><circle cx="94" cy="134" r="8"/><circle cx="180" cy="35" r="8"/><circle cx="180" cy="100" r="8"/></g>
+</svg>
+<span class="diagram-label pretrain-corpus" style="left:15.38462%;top:86px">Large text collections</span>
+<span class="diagram-label pretrain-process overview-training-label" style="left:49.73776%;top:174px">Train from scratch</span>
+<span class="diagram-label pretrain-process overview-cost-label" style="left:49.73776%;top:277px">High compute cost<br>Long training time</span>
+<span class="diagram-label pretrain-model" style="left:84.09091%;top:86px">Pre-trained model</span>
+<span class="diagram-label pretrain-corpus overview-model-caption" style="left:15.38462%;top:350px">Books · websites · articles<br>Across many topics</span>
+<span class="diagram-label pretrain-model overview-model-caption" style="left:84.09091%;top:350px">Language understanding<br>General knowledge</span>
+</div>
+<div class="takeaway intro-training-takeaway pretrain-reuse"><span class="callout-label">Reuse</span><p>Pre-train once. Reuse the base for many tasks.</p></div>
+</div><div class="slide__number">3 / 24</div>
+<aside class="speaker-notes">Start with the first stage, before assuming the audience knows what fine-tuning means. A large language model is first trained on a very large collection of text, such as books, websites and articles across many topics. It learns language patterns and general knowledge by learning to predict text. Training a large model from scratch takes substantial computation and time. The result is a general base, not yet tailored to our particular application. It can already have useful code or domain knowledge; general does not mean it has none. End with the reason to reuse it: do this expensive base training once, then use the same base for many downstream tasks. Here, once means sharing the cost of one base model across applications, not a claim that models can never be trained further or that all training pipelines have only one pre-training run. The diagrams and cost descriptions are qualitative. Next, reuse this exact base model and explain fine-tuning separately. Sources: DISeL, Introduction and §2; LoRA vs. Full Fine-Tuning, Introduction; Devlin et al. (2019), BERT §3.</aside>
+</section>
+
+<section id="4" class="slide ft-overview-slide" data-title="Fine-tuning adapts the base to a task" data-seconds="60">
+<h1 class="slide__title">Fine-tuning adapts the base to a task</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="intro-training-diagram ft-overview-diagram" role="img" aria-label="Fine-tuning continues training an existing model on task data. A pre-trained model with broad knowledge becomes a model adapted to a specific task. The matching network drawings are conceptual; highlighted connections illustrate a learned change.">
+<svg viewBox="0 0 1144 400" aria-hidden="true">
+<g class="primer-network ft-overview-before" transform="translate(82 148)"><path d="M8 35L94 2"/><path d="M8 35L94 68"/><path d="M8 35L94 134"/><path d="M8 100L94 2"/><path d="M8 100L94 68"/><path d="M8 100L94 134"/><path d="M94 2L180 35"/><path d="M94 2L180 100"/><path d="M94 68L180 35"/><path d="M94 68L180 100"/><path d="M94 134L180 35"/><path d="M94 134L180 100"/><circle cx="8" cy="35" r="8"/><circle cx="8" cy="100" r="8"/><circle cx="94" cy="2" r="8"/><circle cx="94" cy="68" r="8"/><circle cx="94" cy="134" r="8"/><circle cx="180" cy="35" r="8"/><circle cx="180" cy="100" r="8"/></g>
+<g class="primer-network ft-overview-after" transform="translate(868 148)"><path d="M8 35L94 2"/><path d="M8 35L94 68" class="primer-learned-edge"/><path d="M8 35L94 134"/><path d="M8 100L94 2"/><path d="M8 100L94 68" class="primer-learned-edge"/><path d="M8 100L94 134"/><path d="M94 2L180 35"/><path d="M94 2L180 100"/><path d="M94 68L180 35" class="primer-learned-edge"/><path d="M94 68L180 100" class="primer-learned-edge"/><path d="M94 134L180 35"/><path d="M94 134L180 100"/><circle cx="8" cy="35" r="8"/><circle cx="8" cy="100" r="8"/><circle cx="94" cy="2" r="8"/><circle cx="94" cy="68" r="8"/><circle cx="94" cy="134" r="8"/><circle cx="180" cy="35" r="8"/><circle cx="180" cy="100" r="8"/></g>
+<g class="primer-data-icon ft-overview-training" transform="translate(535.5 28)"><path d="M-1 17V99H58"/><path class="primer-data-sheet" d="M8 8H49L68 27V90H8Z"/><path d="M49 8V27H68 M21 42H55 M21 55H55 M21 68H44"/></g>
+<path d="M302 216H836M825 206L836 216L825 226" class="primer-training-arrow ft-overview-training"/>
+<path d="M569 178V203M563 197L569 203L575 197" class="primer-data-arrow ft-overview-training"/>
+</svg>
+<span class="diagram-label ft-overview-before" style="left:15.38462%;top:86px">Pre-trained model</span>
+<span class="diagram-label ft-overview-after accent-text" style="left:84.09091%;top:86px">Task-adapted model</span>
+<span class="diagram-label ft-overview-training overview-data-label" style="left:49.73776%;top:154px">Task-specific data (e.g. math or code)</span>
+<span class="diagram-label ft-overview-training overview-training-label" style="left:49.73776%;top:259px">Continue training</span>
+<span class="diagram-label ft-overview-before overview-model-caption" style="left:15.38462%;top:350px">Reuse the same model<br>and its learned weights</span>
+<span class="diagram-label ft-overview-after overview-model-caption" style="left:84.09091%;top:350px">Better at the target task<br>e.g. writing code</span>
+</div>
+<div class="takeaway intro-training-takeaway ft-overview-benefit"><span class="callout-label">Efficiency</span><p>Much less data and compute than training from scratch.</p></div>
+</div><div class="slide__number">4 / 24</div>
+<aside class="speaker-notes">Fine-tuning means continuing to train a pre-trained model on data for a particular task. Begin with the same general model from the preceding slide; we reuse its learned weights instead of starting over. Add a much smaller dataset focused on the target task. For example, code data can help the model become better at writing code. The matching network drawings represent the same architecture before and after training, with highlighted edges only illustrating a change, not a claim that just a few weights move. Reveal the benefit last: training a new large model from scratch for each application would repeat the expensive work from the previous slide. Reusing the base usually needs much less data and compute to learn the task. The comparison is qualitative, not a speed ratio or a claim that every fine-tuning run is cheap, and not a claim that every use of a language model requires fine-tuning. We focus on supervised fine-tuning in this talk. End by asking what happens to the abilities already learned by the base; the next slides introduce forgetting, define the weight update, and then separate fine-tuning from evaluation. Sources: Devlin et al. (2019), BERT §3; DISeL, Introduction and §2; LoRA vs. Full Fine-Tuning, Introduction.</aside>
+</section>
+
+<section id="5" class="slide learning-retention-slide" data-title="Fine-tuning can cause forgetting" data-seconds="35">
+<h1 class="slide__title">Fine-tuning can cause forgetting<sup class="citation-mark">[10]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="learning-retention-intro">Illustrative example: fine-tuning to improve coding skills.</p>
+<div class="retention-example">
+<article class="retention-before"><h2>Before fine-tuning</h2><div class="retention-existing-skill"><svg viewBox="0 0 80 72" aria-hidden="true"><path d="M10 9H70V49H35L20 62V49H10Z M22 22H58 M22 34H50"/></svg><p>Writes German essays<br>correctly</p></div></article>
+<div class="retention-change"><span>Train on code</span><svg viewBox="0 0 166 28" aria-hidden="true"><path d="M5 14H160M149 4L160 14L149 24"/></svg></div>
+<article class="retention-after"><h2>After fine-tuning</h2>
+<div class="retention-outcome retention-gain"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="10" width="52" height="44" rx="3"/><path d="M6 22H58 M22 31L15 37L22 43 M42 31L49 37L42 43 M35 29L29 45"/></svg><div><h3>Writes better code</h3></div></div>
+<div class="retention-outcome retention-loss"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M7 10H57V44H27L15 54V44H7Z M17 21H47 M17 31H30 M40 27V33"/><circle cx="40" cy="37" r="1"/></svg><div><h3>May make grammatical<br>mistakes in German</h3><p>e.g. incorrect articles</p></div></div>
+</article>
+</div>
+<div class="takeaway learning-retention-message"><span class="callout-label">Forgetting</span>Losing previously learned knowledge or skills when learning a new task.</div>
+</div><div class="slide__number">5 / 24</div>
+<p class="slide-citation"><span class="citation-index">[10]</span> Vu et al. (2022). <a href="https://aclanthology.org/2022.emnlp-main.630/"><cite>Overcoming Catastrophic Forgetting in Zero-Shot Cross-Lingual Generation.</cite></a></p>
+<aside class="speaker-notes">Reveal the setup text, then the earlier German skill, then the training arrow, then the after-fine-tuning outcomes, and finally the forgetting definition with its citation. Forgetting means a drop in previously learned knowledge or skills after adaptation; it does not establish that information has been physically erased from every representation. Vu et al. (EMNLP 2022) report that English-only task fine-tuning can harm non-English generation. This supports language forgetting in general, not the particular code-to-German grammatical example, which remains explicitly illustrative. Use a simple before-and-after example. We start with a model that writes German essays correctly and fine-tune it to improve coding. After training, its coding improves, but an earlier skill can get worse: it may make grammatical mistakes in German, for example using incorrect articles. Present the two possible outcomes together. No claim about the model's initial coding level is needed. This is a hypothetical example of forgetting, not a sampled model output or a measured German result in the paper. The next slide defines fine-tuning as a weight update. The data-use protocol follows that definition. The language-forgetting reference is Vu et al. (2022), https://aclanthology.org/2022.emnlp-main.630/. Source: DISeL, Introduction and §2.</aside>
+</section>
+
+<section id="6" class="slide matrix-abstraction-slide" data-title="What is fine-tuning?" data-seconds="65">
+<h1 class="slide__title">What is fine-tuning?</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="matrix-context-diagram" role="img" aria-label="A schematic path through a language model: a token vector passes through learned matrices, with intermediate attention and nonlinear operations omitted. One matrix is highlighted as the focus of the explanation below. This is not a diagram of only linear layers or the complete transformer architecture.">
+<svg viewBox="0 0 1144 164" aria-hidden="true">
+<g class="matrix-context-chain">
+<g><rect x="50" y="52" width="18" height="60" class="context-vector"/><path d="M50 62H68M50 72H68M50 82H68M50 92H68M50 102H68" class="context-grid"/></g>
+<g><rect x="182" y="46" width="72" height="72" class="context-matrix"/><path d="M194 46V118M182 58H254M206 46V118M182 70H254M218 46V118M182 82H254M230 46V118M182 94H254M242 46V118M182 106H254" class="context-grid"/></g>
+<g><rect x="540" y="46" width="72" height="72" class="context-matrix"/><path d="M552 46V118M540 58H612M564 46V118M540 70H612M576 46V118M540 82H612M588 46V118M540 94H612M600 46V118M540 106H612" class="context-grid"/></g>
+<g><rect x="890" y="46" width="72" height="72" class="context-matrix"/><path d="M902 46V118M890 58H962M914 46V118M890 70H962M926 46V118M890 82H962M938 46V118M890 94H962M950 46V118M890 106H962" class="context-grid"/></g>
+<g><rect x="1076" y="52" width="18" height="60" class="context-vector"/><path d="M1076 62H1094M1076 72H1094M1076 82H1094M1076 92H1094M1076 102H1094" class="context-grid"/></g>
+<path d="M86 82H172M164 76L172 82L164 88M264 82H333M325 76L333 82L325 88M419 82H518M510 76L518 82L510 88M634 82H725M717 76L725 82L717 88M811 82H880M872 76L880 82L872 88M972 82H1058M1050 76L1058 82L1050 88" class="context-wires"/>
+</g>
+<rect x="530" y="36" width="92" height="92" rx="2" class="matrix-focus-mark"/>
+</svg>
+<span class="matrix-context-label matrix-context-chain" style="left:59px;top:16px">Token vector</span>
+<span class="matrix-context-label matrix-context-chain" style="left:1085px;top:16px">Output vector</span>
+<span class="matrix-context-label matrix-context-chain" style="left:376px;top:82px;font-size:31px">\(\cdots\)</span>
+<span class="matrix-context-label matrix-context-chain" style="left:768px;top:82px;font-size:31px">\(\cdots\)</span>
+<span class="matrix-context-label matrix-pretrained-label" style="left:576px;top:154px;font-size:25px">Pre-trained weights \(\mathbf{W}_0\in\mathbb{R}^{d_y\times d_x}\)</span>
+<span class="matrix-context-label matrix-local-label" style="left:468.5px;top:53px;font-size:24px">\(\mathbf{x}\in\mathbb{R}^{d_x}\)</span>
+<span class="matrix-context-label matrix-local-label" style="left:679.5px;top:53px;font-size:24px">\(\mathbf{y}\in\mathbb{R}^{d_y}\)</span>
+</div>
+<div class="matrix-focus-heading"><span>Focus on one matrix</span></div>
+<div class="matrix-update-flow" role="img" aria-label="For the selected matrix, the pre-trained output y_pt equals W zero applied to x_pt. Fine-tuning learns an update Delta from new-task data, giving y_ft equals W zero plus Delta, applied to x_ft. The arrow denotes training, not a forward pass from one model into another.">
+<svg viewBox="0 0 1144 160" aria-hidden="true"><path class="context-wires matrix-adapt" d="M437 84H707M699 78L707 84L699 90"/></svg>
+<span class="matrix-update-label matrix-before" style="left:204px;top:26px">Pre-trained</span>
+<span class="matrix-update-label matrix-before matrix-update-equation" style="left:204px;top:84px">\(\mathbf{y}_{\mathrm{pt}}=\mathbf{W}_0\mathbf{x}_{\mathrm{pt}}\)</span>
+<span class="matrix-update-label matrix-before matrix-input-label" style="left:204px;top:125px">\(\mathbf{x}_{\mathrm{pt}}\): pre-training data</span>
+<span class="matrix-update-label matrix-adapt accent-text" style="left:929px;top:26px">Fine-tuned</span>
+<span class="matrix-update-label matrix-adapt matrix-update-equation" style="left:929px;top:84px">\(\mathbf{y}_{\mathrm{ft}}=(\mathbf{W}_0+{\color{#842B40}\boldsymbol{\Delta}})\mathbf{x}_{\mathrm{ft}}\)</span>
+<span class="matrix-update-label matrix-adapt matrix-input-label" style="left:929px;top:125px">\(\mathbf{x}_{\mathrm{ft}}\): fine-tuning data</span>
+<span class="matrix-update-label matrix-adapt matrix-learn-label" style="left:572px;top:42px">Learn correction \(\boldsymbol{\Delta}\)</span>
+<span class="matrix-update-label matrix-adapt matrix-data-label" style="left:572px;top:121px">New-task data</span>
+</div>
+<div class="takeaway matrix-extension"><span class="callout-label">Goal</span>Adapt the pre-trained model to perform better on a new task.</div>
+</div><div class="slide__number">6 / 24</div>
+<aside class="speaker-notes">Begin with the full-model diagram. An LLM contains many learned weight matrices. At a linear operation, a matrix transforms an input vector into an output vector; intermediate representations then feed further operations. The little grids represent weight matrices, and the narrow grids are vectors. The ellipses stand for omitted computation, including attention, nonlinearities, normalization and residual connections. This is a schematic path, not the literal transformer graph: a transformer has branches and attention mixes token representations. The final vector here is an intermediate representation, not a generated text token. First reveal only the red outline around the central matrix. On the next click, show Pre-trained weights W_0 with its dimension beneath the red square and the x and y dimensions above its arrows. Keep the entire lower explanation hidden until the following click, which reveals Focus on one matrix. Reveal the pre-trained equation first. Then reveal the fine-tuning update, correction arrow, and boxed goal together. Define W_0 as its pre-trained weights with d_y rows and d_x columns, x as its d_x-dimensional input, and y as its d_y-dimensional output. The vector dimensions sit on the input and output arrows, and the W_0 dimension appears with its pre-trained-weights label. No weight definition is repeated below the focus heading. These definitions appear before the equations. First reveal y_pt = W_0 x_pt for a pre-training-domain input. Then fine-tuning learns an update Delta from new-task data, giving y_ft = (W_0 + Delta)x_ft for a new-task input. Short blue labels below the equations identify x_pt with pre-training data and x_ft with fine-tuning data. These labels identify the input domains; they do not imply access to pre-training data during fine-tuning. Each label appears with its equation. The subscripts identify the input domains; the generic x and y dimensions above apply to both cases. Delta has the same shape as W_0. The horizontal arrow labeled Learn correction Delta denotes training; it does not pass the pre-trained output into the fine-tuned matrix. Biases are omitted, as in the paper. The bottom box states the goal: adapt the pre-trained model to perform better on a new task. It appears with Learn correction Delta and the y_ft equation. Explain verbally that the same local update description applies to each weight matrix being fine-tuned, with a separate update and potentially different dimensions for each. They are trained jointly through the full network, not as independent models. This description does not say every fine-tuning method updates every matrix, or that full fine-tuning must store a separate dense Delta. Next explain which data is used for training and evaluation, now that the update is defined. Then compare full fine-tuning, which leaves Delta unrestricted, with LoRA, which uses a low-rank factorization. Sources: DISeL §2, Eq. (1); LoRA vs. Full Fine-Tuning §§1–2; Vaswani et al. (2017), §3.</aside>
+</section>
+
+<section id="7" class="slide data-setting-slide" data-title="What data do we use for fine-tuning and evaluation?" data-seconds="45">
+<h1 class="slide__title">What data do we use for fine-tuning and evaluation?</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="data-protocol">
+<article class="data-ft-row"><h2>Fine-tuning</h2><div class="data-flow">
+<svg class="data-icon" viewBox="0 0 76 76" aria-hidden="true"><path d="M13 8H48L62 22V67H13Z M48 8V22H62 M24 32H51 M24 43H51 M24 54H43"/></svg>
+<h3>New-task<br><span class="data-split-label">training</span> data</h3>
+<svg class="data-arrow" viewBox="0 0 30 44" aria-hidden="true"><path d="M15 3V39M7 30L15 39L23 30"/></svg>
+<p>Update the model</p>
+</div></article>
+<div class="data-evaluation"><h2 class="data-eval-heading">Evaluation</h2><div class="data-eval-columns">
+<article class="data-eval-new data-flow">
+<svg class="data-icon" viewBox="0 0 76 76" aria-hidden="true"><path d="M13 8H48L62 22V67H13Z M48 8V22H62 M24 32H51 M24 43H43 M25 55L32 61L47 48"/></svg>
+<h3>New-task<br><span class="data-split-label">test</span> data</h3>
+<svg class="data-arrow" viewBox="0 0 30 44" aria-hidden="true"><path d="M15 3V39M7 30L15 39L23 30"/></svg>
+<p>Measure adaptation</p>
+</article>
+<article class="data-eval-retention data-flow">
+<svg class="data-icon" viewBox="0 0 76 76" aria-hidden="true"><path d="M22 8H65V57H22Z M14 16V65H57 M6 24V73H49 M32 20H55 M32 31H55 M32 42H48"/></svg>
+<h3>Pre-training-domain<br>data</h3>
+<svg class="data-arrow" viewBox="0 0 30 44" aria-hidden="true"><path d="M15 3V39M7 30L15 39L23 30"/></svg>
+<p>Measure retention</p>
+</article>
+</div></div>
+</div>
+<div class="takeaway data-setting-message"><span class="callout-label">Data use</span>Pre-training-domain data is used for evaluation only.</div>
+</div><div class="slide__number">7 / 24</div>
+<aside class="speaker-notes">After defining the fine-tuning update, answer the data-access question directly: yes, we use pre-training-domain data to evaluate retention. Only the words training and test are highlighted in vivid blue to distinguish the two new-task data splits. We do not use it in the fine-tuning loss or replay it during adaptation. Fine-tuning uses the pre-trained weights and only new-task training data. Evaluation has two roles: new-task tests measure adaptation, while general-text corpora and earlier-skill benchmarks measure retention. Pre-training-domain data describes the type of capabilities and text being tested, not access to the exact original training corpus. For RoBERTa, masked-LM evaluation uses WikiText-2, BookCorpusOpen and CC-News; these are held-out evaluation corpora in the protocol. For Llama and Mistral, 14 benchmarks assess retained abilities. MetaMathQA and Magicoder-Evol-Instruct-110K provide new-task training data, while GSM8K and HumanEval test the new skills. Evaluation compares the adapted and pre-trained models. The paper allows RoBERTa retention measurements in model selection, so do not claim evaluation can never influence selection; the precise training constraint is that retention examples do not enter the fine-tuning loss. Nor do we claim that all benchmark text is disjoint from the unknown original pre-training corpus. Source: DISeL §4 and Appendices IV–V.</aside>
+</section>
+
+<section id="8" class="slide tuning-slide" data-title="Full fine-tuning (FFT): an unrestricted update" data-seconds="45">
+<h1 class="slide__title">Full fine-tuning (FFT): an unrestricted update<sup class="citation-mark">[1]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="projection-intro">One weight matrix in the network · \(d_y\times d_x\) weights</p>
+<div class="method-diagram fft-diagram" role="img" aria-label="Two equal-sized matrix grids: pre-trained weights W zero plus the unrestricted update Delta. A centered plus sign separates the grids.">
+<svg viewBox="0 0 1144 350" aria-hidden="true">
+<g transform="translate(228 58)">
+ <rect class="frame-neutral" width="252" height="252" fill="#F2F3F4" stroke="#8C959E" stroke-width="1.5"/>
+ <path d="M28 0V252M0 28H252M56 0V252M0 56H252M84 0V252M0 84H252M112 0V252M0 112H252M140 0V252M0 140H252M168 0V252M0 168H252M196 0V252M0 196H252M224 0V252M0 224H252" fill="none" stroke="#C6CBD0" stroke-width="1"/>
+</g>
+<g transform="translate(664 58)">
+ <rect class="frame-accent" width="252" height="252" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/>
+ <path d="M28 0V252M0 28H252M56 0V252M0 56H252M84 0V252M0 84H252M112 0V252M0 112H252M140 0V252M0 140H252M168 0V252M0 168H252M196 0V252M0 196H252M224 0V252M0 224H252" fill="none" stroke="#D8B0BA" stroke-width="1"/>
+</g>
+</svg>
+<span class="diagram-label" style="left:30.94406%;top:5.71429%;font-size:35px;color:var(--secondary)">\(\mathbf{W}_0\)</span>
+<span class="diagram-label" style="left:69.05594%;top:5.71429%;font-size:35px;color:var(--accent)">\(\boldsymbol{\Delta}\)</span>
+<span class="diagram-label" style="left:50.00000%;top:52.57143%;font-size:46px;color:var(--ink)">\(+\)</span>
+<span class="diagram-label" style="left:30.94406%;top:96.28571%;font-size:24px;color:var(--muted)">Starting weights</span>
+<span class="diagram-label" style="left:69.05594%;top:96.28571%;font-size:24px;color:var(--accent)">No rank restriction</span>
+</div>
+<div class="parameter-summary">
+ <div><span>Trainable parameters</span><div>\(d_xd_y\)</div></div>
+ <div><span>Example: \(d_x=d_y=4096\)</span><div>\(16{,}777{,}216\)</div></div>
+</div>
+</div>
+<div class="slide__number">8 / 24</div>
+<p class="slide-citation"><span class="citation-index">[1]</span> Example of full fine-tuning: Devlin et al. (2019). <a href="https://aclanthology.org/N19-1423/"><cite>BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.</cite></a></p>
+<aside class="speaker-notes">Define full fine-tuning through the update parameterization. For a projection W_0 with d_y rows and d_x columns, the effective weight is W_0 + Delta. Full fine-tuning imposes no rank restriction on Delta; its entries are free parameters. LoRA can also change every entry of the effective projection, but restricts Delta to A B with rank at most r. The distinction is the allowed structure of the update, not which effective entries can change. This additive notation describes the change from initialization and does not require storing a separate dense Delta during full fine-tuning. A 4096 by 4096 projection has exactly 16,777,216 trainable weights. The two equal-sized grids show the starting matrix and the unrestricted update separately. The grids are schematic, not measured updates or literal matrix sizes. The count is per projection and omits biases; it is not the parameter count of the whole transformer. Sources: DISeL §2, Eq. (1); LoRA vs. Full Fine-Tuning §2.1. The footnote cites Devlin et al. (2019), BERT §3.2, as a standard example that fine-tunes all model parameters, not as the origin of full fine-tuning: https://aclanthology.org/N19-1423/.</aside>
+</section>
+
+<section id="9" class="slide tuning-slide" data-title="LoRA learns a low-rank matrix update" data-seconds="45">
+<h1 class="slide__title">LoRA learns a low-rank matrix update<sup class="citation-mark">[2]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="projection-intro">Factorize the update: \(\boldsymbol{\Delta}=\mathbf{A}\mathbf{B},\quad\operatorname{rank}(\boldsymbol{\Delta})\le r\)</p>
+<div class="method-diagram lora-matrix-diagram" role="img" aria-label="The frozen square matrix W zero plus a tall narrow matrix A multiplied by a short wide matrix B. A has d y rows and r columns; B has r rows and d x columns. Their product has the same dimensions as W zero and can change every entry, but has rank at most r.">
+<svg viewBox="0 0 1144 350" aria-hidden="true">
+<g transform="translate(100 58)"><rect class="frame-neutral" width="252" height="252" fill="#F2F3F4" stroke="#8C959E" stroke-width="1.5"/><path d="M28 0V252M56 0V252M84 0V252M112 0V252M140 0V252M168 0V252M196 0V252M224 0V252M0 28H252M0 56H252M0 84H252M0 112H252M0 140H252M0 168H252M0 196H252M0 224H252" fill="none" stroke="#C6CBD0" stroke-width="1"/></g>
+<g transform="translate(552 58)"><rect class="frame-accent" width="56" height="252" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/><path d="M28 0V252M0 28H56M0 56H56M0 84H56M0 112H56M0 140H56M0 168H56M0 196H56M0 224H56" fill="none" stroke="#D8B0BA" stroke-width="1"/></g>
+<g transform="translate(776 156)"><rect class="frame-accent" width="252" height="56" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/><path d="M28 0V56M56 0V56M84 0V56M112 0V56M140 0V56M168 0V56M196 0V56M224 0V56M0 28H252" fill="none" stroke="#D8B0BA" stroke-width="1"/></g>
+</svg>
+<span class="diagram-label" style="left:19.75524%;top:5.71429%;font-size:35px;color:var(--secondary)">\(\mathbf{W}_0\)</span>
+<span class="diagram-label" style="left:50.69930%;top:5.71429%;font-size:35px;color:var(--accent)">\(\mathbf{A}\)</span>
+<span class="diagram-label" style="left:78.84615%;top:33.71429%;font-size:35px;color:var(--accent)">\(\mathbf{B}\)</span>
+<span class="diagram-label" style="left:39.51049%;top:52.57143%;font-size:46px;color:var(--ink)">\(+\)</span>
+<span class="diagram-label" style="left:60.48951%;top:52.57143%;font-size:40px;color:var(--ink)">\(\times\)</span>
+<span class="diagram-label" style="left:19.75524%;top:96.28571%;font-size:23px;color:var(--muted)">Frozen · \(d_y\times d_x\)</span>
+<span class="diagram-label" style="left:50.69930%;top:96.28571%;font-size:23px;color:var(--accent)">Train · \(d_y\times r\)</span>
+<span class="diagram-label" style="left:78.84615%;top:70.57143%;font-size:23px;color:var(--accent)">Train · \(r\times d_x\)</span>
+</div>
+<div class="parameter-summary">
+ <div><span>Trainable parameters</span><div>\(r(d_x+d_y)\), with \(r\ll\min(d_x,d_y)\)</div></div>
+ <div><span>\(r=16\)</span><div>\(131{,}072\) <span class="parameter-saving">\(128\times\) fewer</span></div></div>
+</div>
+</div>
+<div class="slide__number">9 / 24</div>
+<p class="slide-citation"><span class="citation-index">[2]</span> Hu et al. (2022). <a href="https://arxiv.org/abs/2106.09685"><cite>LoRA: Low-Rank Adaptation of Large Language Models.</cite></a> ICLR.</p>
+<aside class="speaker-notes">Compare directly with the preceding full-fine-tuning matrix graphic. Keep W_0 frozen and replace the unconstrained dense change Delta by the product A B. A is tall and narrow with d_y rows and r columns; B is short and wide with r rows and d_x columns. The matching inner dimension is r, so their product has the same d_y by d_x shape as W_0 and rank at most r. The product can be dense, so every entry of the effective matrix W_0 + A B can change. Its rank restriction couples those changes; it does not select a subset of matrix entries. W_0 stays fixed as a stored parameter, and only the two burgundy factors are optimized. For the same 4096 by 4096 projection, rank 16 uses 131,072 trainable weights instead of 16,777,216, exactly 128 times fewer. This is a per-projection parameter count, not a total-memory or speed ratio. The grids illustrate the matrix shapes and shared rank dimension, not the actual 4096 and 16 entries or measured values. The conventional alpha-over-r scale is omitted. Appendix A10 shows how this product acts on an input, with B applied first, followed by A. Sources: Hu et al. (2022), LoRA, ICLR, https://arxiv.org/abs/2106.09685; DISeL §§2–3; LoRA vs. Full Fine-Tuning §2.2.</aside>
+</section>
+
+<section id="10" class="slide regression-forgetting-slide" data-title="Why can FFT and LoRA forget?" data-seconds="75">
+<h1 class="slide__title">Why can FFT and LoRA forget?</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="shared-update-intro"><p>After updating \(\mathbf{W}_0\) using new task data:</p><div>\(\mathbf{W}_0\;\longrightarrow\;\mathbf{W}_0+{\color{#842B40}\boldsymbol{\Delta}}\)</div></div>
+<div class="shared-update-cases">
+<article class="shared-update-new"><h2>New-task input \(\mathbf{x}_{\mathrm{ft}}\)</h2><div class="shared-update-output"><span class="shared-update-output-label">After fine-tuning</span>\(\mathbf{y}_{\mathrm{ft}}=\bigl(\mathbf{W}_0+{\color{#842B40}\boldsymbol{\Delta}}\bigr)\mathbf{x}_{\mathrm{ft}}\)</div><p class="shared-update-effect">Correction learned for the new task</p></article>
+<article class="shared-update-old"><h2>Earlier input \(\mathbf{x}_{\mathrm{pt}}\)</h2><p class="shared-update-goal"><strong>Desired output:</strong> \(\mathbf{y}_{\mathrm{pt}}=\mathbf{W}_0\mathbf{x}_{\mathrm{pt}}\)</p><div class="shared-update-output"><span class="shared-update-output-label">After fine-tuning</span>\(\mathbf{y}_{\mathrm{pt}}=\bigl(\mathbf{W}_0+{\color{#842B40}\boldsymbol{\Delta}}\bigr)\mathbf{x}_{\mathrm{pt}}\)</div><p class="shared-update-effect">The same update can disturb this answer.</p></article>
+</div>
+<div class="takeaway shared-update-error"><span class="callout-label">Retention error</span><div>\(\bigl\|(\mathbf{W}_0+\boldsymbol{\Delta})\mathbf{x}_{\mathrm{pt}}-\mathbf{W}_0\mathbf{x}_{\mathrm{pt}}\bigr\|^2=\|\boldsymbol{\Delta}\mathbf{x}_{\mathrm{pt}}\|^2\)</div><p>New-task training does not force this error to be zero.</p></div>
+</div><div class="slide__number">10 / 24</div>
+<aside class="speaker-notes">Explain why the update is learned before showing its effect on an earlier input. We fine-tune one linear map using new-task data, changing W_0 to W_0+Delta. The same learned matrix acts on both kinds of input. Label the corresponding outputs y_ft and y_pt, matching the input subscripts. For y_pt, the Desired output line states the behavior to preserve; the After fine-tuning line shows the actual output, which can differ. For a new-task input x_ft, the added term Delta x_ft is trained to improve the answer. This describes the training goal, not a guarantee that every new-task prediction improves. Then show an earlier input x_pt from the pre-training domain. Point first to the prominent Desired output: W_0 x_pt line: this is the output we want to preserve. In this example the original output is already correct. Pause here with the updated output still hidden. On the next click, reveal the expression labeled After fine-tuning below, (W_0+Delta)x_pt, together with its explanation, and contrast it with the desired output. The same update also adds Delta x_pt to this answer. The new-task objective does not directly constrain that earlier input, so a correction learned to help the new task can interfere with an existing capability. Low rank alone does not prevent this: Delta=A B still acts on x_pt. The two columns factor the input vectors out on the right, showing (W_0+Delta)x_ft and (W_0+Delta)x_pt. Delta remains highlighted in burgundy to emphasize the same learned update. These are outputs of the same linear map, not separate models. Subtract the desired earlier output W_0 x_pt from the updated output (W_0+Delta)x_pt. The W_0 terms cancel, so the squared retention error on this input is ||Delta x_pt||^2. If Delta x_pt=0 the output is preserved; forgetting is possible, not inevitable. We assume the earlier answer is correct in this example. A changed answer is not inherently forgetting when the old answer was wrong. The input x_pt is conceptual and identifies a domain; it is not supplied to the fine-tuning loss or evidence of access to the original pre-training corpus. This general calculation applies to one linear map, with no prescribed matrix entries, dimensions or numerical values. It is not a population risk, a measured language-model metric, or a formula for the entire nonlinear LLM. Lead into DISeL by asking how to learn where a correction is useful while limiting changes elsewhere. Source: DISeL §2, Eq. (1), and §3 motivation.</aside>
+</section>
+
+<section id="11" class="slide disel-idea-slide" data-title="Our method: DISeL — the idea" data-seconds="50">
+<h1 class="slide__title">Our method: DISeL — the idea<sup class="citation-mark">[3]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="disel-idea-intro"><p>Make \(\boldsymbol{\Delta}\) input-dependent.</p><div>\(\boldsymbol{\Delta}\;\longrightarrow\;{\color{#842B40}\boldsymbol{\Delta}(\mathbf{x})}\)</div></div>
+<div class="idea-desired-label">Desired behavior</div>
+<div class="idea-math-cases">
+<article class="idea-adapt-example"><h2>New-task input \(\mathbf{x}_{\mathrm{ft}}\)</h2><p class="idea-case-condition">A correction is needed.</p><div class="idea-math-output">\(\mathbf{y}=\bigl(\mathbf{W}_0+{\color{#842B40}\boldsymbol{\Delta}(\mathbf{x}_{\mathrm{ft}})}\bigr)\mathbf{x}_{\mathrm{ft}}\)</div><p class="idea-case-action">Allow the correction</p></article>
+<article class="idea-preserve-example"><h2>Earlier input \(\mathbf{x}_{\mathrm{pt}}\)</h2><p class="idea-case-condition">The original answer is correct.</p><div class="idea-math-output">\(\mathbf{y}=\bigl(\mathbf{W}_0+{\color{#842B40}\boldsymbol{\Delta}(\mathbf{x}_{\mathrm{pt}})}\bigr)\mathbf{x}_{\mathrm{pt}}\)<div class="idea-retention-condition">\({\color{#842B40}\boldsymbol{\Delta}(\mathbf{x}_{\mathrm{pt}})}\approx\mathbf{0}\)</div></div><p class="idea-case-action">Suppress the correction</p></article>
+</div>
+<div class="takeaway disel-idea-message"><span class="callout-label">Training</span>Learn the correction and when to apply it, using only new-task data.</div>
+</div><div class="slide__number">11 / 24</div>
+<p class="slide-citation"><span class="citation-index">[3]</span> Zindari et al. (2026). <a href="https://arxiv.org/abs/2605.19028"><cite>Learning When to Adapt.</cite></a></p>
+<aside class="speaker-notes">Connect directly to slide 10 using the same two inputs and the same highlighted correction terms. There, one fixed Delta affected both inputs. Our idea is to make the effective update depend on the input: write it as Delta(x). This is an explanatory shorthand for the effective update matrix, not a new set of weights trained for every input. DISeL will implement Delta(x)=A G(x) B; defer that factorization and gate computation to the next slides. State the goal in ordinary words: learn how much correction each input needs. The two columns are visibly labeled desired behavior. For a new-task input needing a correction, allow a useful update. For an earlier input whose original answer is already correct, the design goal is to suppress the entire input-dependent update matrix: Delta(x_pt) approximately zero. Both output formulas factor their input vector out on the right. The smaller condition below the earlier-input output states this matrix-level goal explicitly. It connects to the closed-gate illustration: G(x_pt)=0 implies Delta(x_pt)=A G(x_pt) B=0, exactly recovering W_0 x_pt. This is a stronger sufficient condition than merely requiring Delta(x_pt)x_pt=0 for this one vector. Small update matrices make the output correction small relative to the input norm; finite sigmoid gates only approach the ideal zero-matrix case. The approximation describes a target behavior, not a proved or measured bound; suppression need not be exact. The method does not receive a hardcoded task identity or an old-versus-new label. New-task inputs can need little correction, and earlier inputs can benefit from change when their original answer is wrong. DISeL learns continuous input-dependent controls from new-task data; it does not guarantee ideal separation or zero forgetting. Emphasize that the correction factors and their controls learn together using only the new-task fine-tuning loss. There is no pre-training-data replay. The next two slides illustrate ideal fully open and closed matrix cases, then the method slide gives the actual formulas. Source: DISeL §3, Eq. (7).</aside>
+</section>
+
+<section id="12" class="slide tuning-slide disel-case-slide disel-case-slide--stacked" data-title="DISeL: allow correction for inputs from fine-tuning data" data-seconds="35">
+<h1 class="slide__title">DISeL: allow correction for inputs from fine-tuning data<sup class="citation-mark">[3]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="disel-case-bridge"><div class="disel-case-math"><div class="disel-correction-equation"><span>\(\boldsymbol{\Delta}(\mathbf{x})=\mathbf{A}\)</span><span class="disel-gate-insert">\({\color{#842B40}\mathbf{G}(\mathbf{x})}\)</span><span>\(\mathbf{B}\)</span></div><p class="disel-case-dimension">\(\mathbf{G}(\mathbf{x})\in\mathbb{R}^{r\times r}\)</p></div><p class="disel-case-input">For \(\mathbf{x}=\mathbf{x}_{\mathrm{ft}}\) from fine-tuning data, we want \({\color{#842B40}\mathbf{G}(\mathbf{x}_{\mathrm{ft}})=\mathbf{I}}\).</p>
+<div class="disel-case-result">\({\color{#842B40}\boldsymbol{\Delta}(\mathbf{x}_{\mathrm{ft}})=\mathbf{A}\mathbf{B}}\quad\Longrightarrow\quad\mathbf{y}=(\mathbf{W}_0+\mathbf{A}\mathbf{B})\mathbf{x}_{\mathrm{ft}}\)<span class="disel-case-result-label">LoRA update</span></div></div>
+<div class="method-diagram disel-matrix-diagram disel-case-diagram" role="img" aria-label="Ideal behavior for an input needing the correction: G of x is the two by two identity, so A G of x B equals A B and the correction is applied. These are ideal illustrative gate values, not measured behavior or hard task labels in DISeL.">
+<svg viewBox="0 0 1144 350" aria-hidden="true">
+<g transform="translate(50 58)"><rect class="frame-neutral" width="252" height="252" fill="#F2F3F4" stroke="#8C959E" stroke-width="1.5"/><path d="M28 0V252M56 0V252M84 0V252M112 0V252M140 0V252M168 0V252M196 0V252M224 0V252M0 28H252M0 56H252M0 84H252M0 112H252M0 140H252M0 168H252M0 196H252M0 224H252" fill="none" stroke="#C6CBD0" stroke-width="1"/></g>
+<g transform="translate(436 58)"><rect class="frame-accent" width="56" height="252" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/><path d="M28 0V252M0 28H56M0 56H56M0 84H56M0 112H56M0 140H56M0 168H56M0 196H56M0 224H56" fill="none" stroke="#D8B0BA" stroke-width="1"/></g>
+<g transform="translate(842 156)"><rect class="frame-accent" width="252" height="56" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/><path d="M28 0V56M56 0V56M84 0V56M112 0V56M140 0V56M168 0V56M196 0V56M224 0V56M0 28H252" fill="none" stroke="#D8B0BA" stroke-width="1"/></g><g transform="translate(626 142)"><rect width="84" height="84" fill="#FFF"/><rect width="42" height="42" fill="#842B40"/><rect x="42" y="42" width="42" height="42" fill="#842B40"/><path d="M42 0V84M0 42H84" stroke="#D8B0BA" stroke-width="1"/><rect class="frame-accent" width="84" height="84" fill="none" stroke="#A36675" stroke-width="1.5"/></g>
+</svg>
+<span class="diagram-label " style="left:15.38462%;top:5.71429%;font-size:35px;color:var(--secondary);">\(\mathbf{W}_0\)</span>
+<span class="diagram-label " style="left:40.55944%;top:5.71429%;font-size:35px;color:var(--accent);">\(\mathbf{A}\)</span>
+<span class="diagram-label " style="left:58.39161%;top:29.14286%;font-size:32px;color:var(--accent);">\(\mathbf{G}(\mathbf{x}_{\mathrm{ft}})=\mathbf{I}\)</span>
+<span class="diagram-label " style="left:84.61538%;top:33.71429%;font-size:35px;color:var(--accent);">\(\mathbf{B}\)</span>
+<span class="diagram-label " style="left:32.25524%;top:52.57143%;font-size:46px;color:var(--ink);">\(+\)</span>
+<span class="diagram-label " style="left:49.47552%;top:52.57143%;font-size:40px;color:var(--ink);">\(\times\)</span>
+<span class="diagram-label " style="left:67.22028%;top:52.57143%;font-size:40px;color:var(--ink);">\(\times\)</span>
+<span class="diagram-label " style="left:56.55594%;top:46.57143%;font-size:25px;color:#FFF;">\(1\)</span>
+<span class="diagram-label " style="left:60.22727%;top:58.57143%;font-size:25px;color:#FFF;">\(1\)</span>
+<span class="diagram-label " style="left:60.22727%;top:46.57143%;font-size:25px;color:var(--muted);">\(0\)</span>
+<span class="diagram-label " style="left:56.55594%;top:58.57143%;font-size:25px;color:var(--muted);">\(0\)</span>
+<span class="diagram-label " style="left:15.38462%;top:96.28571%;font-size:23px;color:var(--muted);">Frozen</span>
+<span class="diagram-label " style="left:40.55944%;top:96.28571%;font-size:23px;color:var(--accent);">Train</span>
+<span class="diagram-label disel-case-state" style="left:58.39161%;top:76.00000%;">Fully open<small>Ideal case</small></span>
+<span class="diagram-label " style="left:84.61538%;top:70.57143%;font-size:23px;color:var(--accent);">Train</span>
+</div>
+</div><div class="slide__number">12 / 24</div>
+<p class="slide-citation"><span class="citation-index">[3]</span> Zindari et al. (2026). <a href="https://arxiv.org/abs/2605.19028"><cite>Learning When to Adapt.</cite></a></p>
+<aside class="speaker-notes">First show Delta(x) = A B, the LoRA case with no input dependence. On the next click insert G(x) between the two factors and show its r-by-r dimension beside the definition. The spaces reserve its position, so the surrounding formula stays in place. Then introduce x=x_ft from fine-tuning data and the ideal desired condition G(x_ft)=I, with the resulting LoRA correction and output directly below. Finally reveal the illustrative two-rank matrix picture. Connect the Delta(x) introduced on slide 11 to its implementation: Delta(x)=A G(x) B. The factors A and B are the learned LoRA factors, and G(x) is a diagonal matrix with one gate per rank component. In the rank-two picture, each diagonal entry scales one column of A paired with the corresponding row of B. First explain this bridge, then reveal the full matrix example. Reuse x_ft for an illustrative new-task input needing a correction. In the ideal fully open case G(x_ft)=I, the product reduces to A B and y=(W_0+A B)x_ft. The result above the figure connects the simplified correction to the resulting output and labels it LoRA update. The identity is G(x_ft), not Delta(x_ft): the latter equals A B and has the shape of the weight update. The word ideal is visible beneath the gates. This is not a hardcoded task or code-input rule, nor a claim that every new-task input needs the full correction. Actual sigmoid gates are learned and continuous, can differ across rank components, and only approach these ideal endpoints for finite scores. The following slide uses the same learned factors for the earlier input x_pt. Source: DISeL §3, Eq. (7).</aside>
+</section>
+
+<section id="13" class="slide tuning-slide disel-case-slide disel-case-slide--stacked" data-title="DISeL: suppress correction for inputs from pre-training data" data-seconds="35">
+<h1 class="slide__title">DISeL: suppress correction for inputs from pre-training data<sup class="citation-mark">[3]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="disel-case-bridge"><div class="disel-case-math"><div class="disel-correction-equation">\(\boldsymbol{\Delta}(\mathbf{x})=\mathbf{A}{\color{#842B40}\mathbf{G}(\mathbf{x})}\mathbf{B}\)</div><p class="disel-case-dimension">\(\mathbf{G}(\mathbf{x})\in\mathbb{R}^{r\times r}\)</p></div><p class="disel-case-input">For \(\mathbf{x}=\mathbf{x}_{\mathrm{pt}}\) from the pre-training domain, we want \({\color{#842B40}\mathbf{G}(\mathbf{x}_{\mathrm{pt}})=\mathbf{0}}\).</p>
+<div class="disel-case-result">\({\color{#842B40}\boldsymbol{\Delta}(\mathbf{x}_{\mathrm{pt}})=\mathbf{0}}\quad\Longrightarrow\quad\mathbf{y}=\mathbf{W}_0\mathbf{x}_{\mathrm{pt}}\)<span class="disel-case-result-label">Pre-trained output</span></div></div>
+<div class="method-diagram disel-matrix-diagram disel-case-diagram" role="img" aria-label="Ideal behavior for an input to preserve: G of x is the two by two zero matrix, so A G of x B is zero and the base projection W zero is unchanged. These are ideal illustrative gate values, not measured behavior or hard task labels in DISeL.">
+<svg viewBox="0 0 1144 350" aria-hidden="true">
+<g transform="translate(50 58)"><rect class="frame-neutral" width="252" height="252" fill="#F2F3F4" stroke="#8C959E" stroke-width="1.5"/><path d="M28 0V252M56 0V252M84 0V252M112 0V252M140 0V252M168 0V252M196 0V252M224 0V252M0 28H252M0 56H252M0 84H252M0 112H252M0 140H252M0 168H252M0 196H252M0 224H252" fill="none" stroke="#C6CBD0" stroke-width="1"/></g>
+<g transform="translate(436 58)"><rect class="frame-accent" width="56" height="252" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/><path d="M28 0V252M0 28H56M0 56H56M0 84H56M0 112H56M0 140H56M0 168H56M0 196H56M0 224H56" fill="none" stroke="#D8B0BA" stroke-width="1"/></g>
+<g transform="translate(842 156)"><rect class="frame-accent" width="252" height="56" fill="#F5ECEF" stroke="#A36675" stroke-width="1.5"/><path d="M28 0V56M56 0V56M84 0V56M112 0V56M140 0V56M168 0V56M196 0V56M224 0V56M0 28H252" fill="none" stroke="#D8B0BA" stroke-width="1"/></g><g transform="translate(626 142)"><rect width="84" height="84" fill="#FFF"/><rect width="42" height="42" fill="#FFF"/><rect x="42" y="42" width="42" height="42" fill="#FFF"/><path d="M42 0V84M0 42H84" stroke="#D8B0BA" stroke-width="1"/><rect class="frame-accent" width="84" height="84" fill="none" stroke="#A36675" stroke-width="1.5"/></g>
+</svg>
+<span class="diagram-label " style="left:15.38462%;top:5.71429%;font-size:35px;color:var(--secondary);">\(\mathbf{W}_0\)</span>
+<span class="diagram-label " style="left:40.55944%;top:5.71429%;font-size:35px;color:var(--accent);">\(\mathbf{A}\)</span>
+<span class="diagram-label " style="left:58.39161%;top:29.14286%;font-size:32px;color:var(--accent);">\(\mathbf{G}(\mathbf{x}_{\mathrm{pt}})=\mathbf{0}\)</span>
+<span class="diagram-label " style="left:84.61538%;top:33.71429%;font-size:35px;color:var(--accent);">\(\mathbf{B}\)</span>
+<span class="diagram-label " style="left:32.25524%;top:52.57143%;font-size:46px;color:var(--ink);">\(+\)</span>
+<span class="diagram-label " style="left:49.47552%;top:52.57143%;font-size:40px;color:var(--ink);">\(\times\)</span>
+<span class="diagram-label " style="left:67.22028%;top:52.57143%;font-size:40px;color:var(--ink);">\(\times\)</span>
+<span class="diagram-label " style="left:56.55594%;top:46.57143%;font-size:25px;color:var(--accent);">\(0\)</span>
+<span class="diagram-label " style="left:60.22727%;top:58.57143%;font-size:25px;color:var(--accent);">\(0\)</span>
+<span class="diagram-label " style="left:60.22727%;top:46.57143%;font-size:25px;color:var(--muted);">\(0\)</span>
+<span class="diagram-label " style="left:56.55594%;top:58.57143%;font-size:25px;color:var(--muted);">\(0\)</span>
+<span class="diagram-label " style="left:15.38462%;top:96.28571%;font-size:23px;color:var(--muted);">Frozen</span>
+<span class="diagram-label " style="left:40.55944%;top:96.28571%;font-size:23px;color:var(--accent);">Train</span>
+<span class="diagram-label disel-case-state" style="left:58.39161%;top:76.00000%;">Fully closed<small>Ideal case</small></span>
+<span class="diagram-label " style="left:84.61538%;top:70.57143%;font-size:23px;color:var(--accent);">Train</span>
+</div>
+</div><div class="slide__number">13 / 24</div>
+<p class="slide-citation"><span class="citation-index">[3]</span> Zindari et al. (2026). <a href="https://arxiv.org/abs/2605.19028"><cite>Learning When to Adapt.</cite></a></p>
+<aside class="speaker-notes">Show all the mathematical explanation together on entry: the implementation Delta(x)=A G(x) B, the r-by-r dimension of G, the earlier-input condition, and its result. For x=x_pt from the pre-training domain, the desired ideal case is G(x_pt)=0, so Delta(x_pt)=0 and y=W_0 x_pt. The gate definition has already been introduced on slide 12, so do not reveal it separately again. On the next click, reveal the matrix picture. Keep the same learned A and B as on slide 12; only the input and its gate values change. Reuse x_pt from slides 10–11: an illustrative earlier input for which we want to keep the effective weights at W_0. The stored W_0 is frozen in both cases; the statement concerns the effective matrix W_0+A G(x_pt) B. In the ideal fully closed case G(x_pt)=0, Delta(x_pt)=0 and y=W_0 x_pt. This removes the correction term that caused the squared retention error on slide 10. The zero shown in the result is the entire effective update matrix, not just one entry. These are illustrative desired endpoints, not known task labels or guaranteed learned behavior. The earlier input is conceptual and is not supplied to the fine-tuning loss. Finite sigmoid gates approach zero, so suppression is approximate in practice. Whole-model recovery also requires every adapted projection to have zero correction and other parameters to remain unchanged. The next slide explains how the model computes a continuous gate for each rank from the input, learning the controls jointly with the LoRA factors on new-task data only. Source: DISeL §3, Eq. (7).</aside>
+</section>
+
+<section id="14" class="slide disel-math-slide" data-title="DISeL: learn the gates from the input" data-seconds="60">
+<h1 class="slide__title">DISeL: learn the gates from the input<sup class="citation-mark">[3]</sup></h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="disel-method-equation">\(\mathbf{y}=\bigl(\mathbf{W}_0+\mathbf{A}{\color{#842B40}\mathbf{G}(\mathbf{x})}\mathbf{B}\bigr)\mathbf{x}\)</div>
+<div class="disel-gate-definition"><div class="disel-gate-equation">\(\mathbf{G}(\mathbf{x})=\operatorname{diag}\;\bigl(\sigma({\color{#842B40}\mathbf{W}_g}\mathbf{x}+{\color{#842B40}\mathbf{b}})\bigr),\)</div><p class="disel-matrix-dimension">\(\mathbf{W}_g\in\mathbb{R}^{r\times d_x},\quad\mathbf{b}\in\mathbb{R}^{r}\)</p></div>
+<div class="disel-gate-flow">
+<div class="disel-gate-matrix">
+<h2>Diagonal gates</h2>
+<div class="disel-diagonal-detail" role="img" aria-label="The sigmoid gate values are placed on the diagonal of G of x. All off-diagonal entries are zero. An arrow points from the formula for g r to its highlighted diagonal entry.">
+<svg viewBox="0 0 280 250" aria-hidden="true">
+<defs><marker id="diagonal-entry-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#842B40" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect x="64" y="4" width="152" height="152" fill="#FAF9F6"/>
+<path d="M64 4H102V42H64ZM102 42H140V80H102ZM140 80H178V118H140Z" fill="#F5ECEF"/>
+<rect x="178" y="118" width="38" height="38" fill="#842B40"/>
+<path d="M102 4V156M140 4V156M178 4V156M64 42H216M64 80H216M64 118H216" stroke="#D8B0BA" stroke-width="1"/>
+<rect x="64" y="4" width="152" height="152" fill="none" stroke="#963F56" stroke-width="2"/>
+<path d="M245 188V151L221 139" fill="none" stroke="#842B40" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#diagonal-entry-arrow)"/>
+</svg>
+<span class="diagram-label disel-diagonal-value" style="left:83px;top:23px">\(g_1\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:121px;top:23px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:159px;top:23px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:197px;top:23px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:83px;top:61px">\(0\)</span>
+<span class="diagram-label disel-diagonal-value" style="left:121px;top:61px">\(g_2\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:159px;top:61px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:197px;top:61px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:83px;top:99px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:121px;top:99px">\(0\)</span>
+<span class="diagram-label disel-diagonal-value" style="left:159px;top:99px">\(\ddots\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:197px;top:99px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:83px;top:137px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:121px;top:137px">\(0\)</span>
+<span class="diagram-label disel-diagonal-zero" style="left:159px;top:137px">\(0\)</span>
+<span class="diagram-label disel-diagonal-value disel-diagonal-selected" style="left:197px;top:137px">\(g_r\)</span>
+<div class="disel-diagonal-annotation"><p>One diagonal entry</p><div>\({\color{#842B40}g_r(\mathbf{x})}=\sigma\bigl((\mathbf{W}_g\mathbf{x})_r+b_r\bigr)\)</div></div>
+</div>
+</div>
+<div class="disel-sigmoid">
+<h2>Sigmoid</h2>
+<div class="disel-sigmoid-plot" role="img" aria-label="Sigmoid of z, rising smoothly from near zero to near one, with value one half at z equals zero.">
+<svg viewBox="0 0 360 210" aria-hidden="true">
+<path d="M36 158H326M319 153L326 158L319 163M36 158V23M31 30L36 23L41 30" fill="none" stroke="#7F8A94" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M36 46H300M171.5 158V102" fill="none" stroke="#C6CBD0" stroke-width="1.2" stroke-dasharray="4 4"/>
+<path d="M45.00 157.72 L47.11 157.69 L49.22 157.66 L51.33 157.63 L53.43 157.59 L55.54 157.54 L57.65 157.50 L59.76 157.44 L61.87 157.39 L63.98 157.32 L66.08 157.25 L68.19 157.17 L70.30 157.09 L72.41 156.99 L74.52 156.89 L76.62 156.77 L78.73 156.64 L80.84 156.50 L82.95 156.35 L85.06 156.17 L87.17 155.99 L89.28 155.78 L91.38 155.55 L93.49 155.30 L95.60 155.02 L97.71 154.72 L99.82 154.38 L101.92 154.02 L104.03 153.61 L106.14 153.17 L108.25 152.69 L110.36 152.16 L112.47 151.58 L114.58 150.95 L116.68 150.26 L118.79 149.50 L120.90 148.68 L123.01 147.79 L125.12 146.83 L127.22 145.78 L129.33 144.65 L131.44 143.43 L133.55 142.11 L135.66 140.70 L137.77 139.19 L139.88 137.57 L141.98 135.84 L144.09 134.01 L146.20 132.07 L148.31 130.03 L150.42 127.88 L152.53 125.63 L154.63 123.28 L156.74 120.84 L158.85 118.31 L160.96 115.72 L163.07 113.05 L165.18 110.34 L167.28 107.58 L169.39 104.80 L171.50 102.00 L173.61 99.20 L175.72 96.42 L177.82 93.66 L179.93 90.95 L182.04 88.28 L184.15 85.69 L186.26 83.16 L188.37 80.72 L190.47 78.37 L192.58 76.12 L194.69 73.97 L196.80 71.93 L198.91 69.99 L201.02 68.16 L203.12 66.43 L205.23 64.81 L207.34 63.30 L209.45 61.89 L211.56 60.57 L213.67 59.35 L215.78 58.22 L217.88 57.17 L219.99 56.21 L222.10 55.32 L224.21 54.50 L226.32 53.74 L228.43 53.05 L230.53 52.42 L232.64 51.84 L234.75 51.31 L236.86 50.83 L238.97 50.39 L241.07 49.98 L243.18 49.62 L245.29 49.28 L247.40 48.98 L249.51 48.70 L251.62 48.45 L253.72 48.22 L255.83 48.01 L257.94 47.83 L260.05 47.65 L262.16 47.50 L264.27 47.36 L266.38 47.23 L268.48 47.11 L270.59 47.01 L272.70 46.91 L274.81 46.83 L276.92 46.75 L279.02 46.68 L281.13 46.61 L283.24 46.56 L285.35 46.50 L287.46 46.46 L289.57 46.41 L291.68 46.37 L293.78 46.34 L295.89 46.31 L298.00 46.28" fill="none" stroke="#842B40" stroke-width="3" stroke-linecap="round"/>
+<circle cx="171.5" cy="102" r="3.5" fill="#842B40"/>
+</svg>
+<span class="diagram-label" style="left:36px;top:7px;font-size:23px">\(\sigma(z)\)</span>
+<span class="diagram-label" style="left:20px;top:46px;font-size:21px">\(1\)</span>
+<span class="diagram-label" style="left:20px;top:158px;font-size:21px">\(0\)</span>
+<span class="diagram-label" style="left:171.5px;top:180px;font-size:21px">\(0\)</span>
+<span class="diagram-label" style="left:337px;top:158px;font-size:23px">\(z\)</span>
+</div>
+
+<div class="disel-sigmoid-definition">\(\displaystyle \sigma(z)=\frac{1}{1+e^{-z}}\)</div>
+</div>
+</div>
+</div><div class="slide__number">14 / 24</div>
+<p class="slide-citation"><span class="citation-index">[3]</span> Zindari et al. (2026). <a href="https://arxiv.org/abs/2605.19028"><cite>Learning When to Adapt.</cite></a></p>
+<aside class="speaker-notes">Move from the ideal endpoints to the actual learned controls. Explain verbally that W_g contains learnable weights that make the gates input dependent. W_g is shared across inputs; the computed gate values depend on x. Its rows each compute an input-dependent score; b adds the offsets, and sigmoid converts the scores to gate values. The top data reminder and bottom explanatory sentence are omitted to keep the slide focused on the equations. Verbally recall the data assumption: train the adapter and gates using only new-task data. We have the pre-trained weights but no access to the data used to pre-train them. Retention benchmarks measure earlier abilities and do not supply gradients to these parameters. Connect the preceding idea and rank-gating illustration to the actual gate computation. For one adapted projection, the input vector x produces y = (W_0 + A G(x) B)x. W_0 is the frozen pre-trained matrix, and A and B are the same low-rank factors as LoRA. The new diagonal matrix G(x) controls the correction for the current input. Compute W_g x + b, apply sigmoid to each entry, then place these gate values on the diagonal. W_g is a learned r-by-d_x gate-weight matrix and b is a learned r-dimensional bias vector; they are distinct from the frozen base weights W_0. The result is an r-by-r diagonal G(x), with one scalar gate for each rank component. The small matrix makes this explicit: its off-diagonal entries are zero, and dots omit intermediate ranks. The burgundy last diagonal entry is g_r(x) = sigma((W_g x)_r + b_r); the subscript r selects row r of the gate-score vector, not a power. The arrow connects this scalar formula to the actual entry. Each of the other diagonal entries is computed in the same way using its own row of W_g and bias entry. A has shape d_y by r, B has shape r by d_x, and the output y has dimension d_y. The model update is centered at the top, with G(x) highlighted. The full gate definition appears below it. Below the equations, the diagonal matrix and sigmoid form two evenly spaced illustrations, with the matrix on the left and sigmoid on the right. The separate gate-score block is omitted. The dimensions of W_g and b follow the gate definition on the same line, separated by a comma and a small gap. Reveal the model update, then the gate definition and dimensions, then the diagonal matrix and sigmoid together. There are no arrows between the two illustrations. The small pointer from the scalar gate formula to its matrix entry remains. These make clear that G(x) scales the rank components while W_g maps the d_x-dimensional input to r gate scores. The burgundy W_g and b are the trainable gate parameters; A and B remain trainable as in LoRA. G(x) itself is computed, not an extra dense trainable matrix. The small curve plots the scalar sigmoid sigma(z) = 1/(1+exp(-z)); it is applied separately to each entry of W_g x + b. It maps zero to one half and approaches zero or one for large negative or positive scores. Each finite sigmoid output lies strictly between zero and one, so exact identity and zero gates are ideal limiting cases. Each gate can differ; the values need not sum to one. The next slide keeps the same matrix notation and explains how W_g and b are initialized. A sigmoid curve can illustrate one entry of the score vector W_g x + b without introducing separate row-weight notation. All four learned quantities A, B, W_g and b receive the new-task training signal jointly while W_0 stays frozen. There are no supplied code-versus-other labels for the gate and no access to pre-training data in this setup. The input is the token representation at this projection, not raw text. As in the preceding slides, the conventional alpha-over-r scale and base bias are omitted. Appendix A11 shows the full input flow. Next explain near-closed initialization. Source: DISeL §3, Eq. (7).</aside>
+</section>
+
+<section id="15" class="slide disel-start-slide" data-title="Start nearly closed. Learn when to open." data-seconds="75">
+<h1 class="slide__title">Start nearly closed. Learn when to open.</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="gate-initialization-intro">
+<div class="gate-init-overview">
+<div class="gate-definition-reminder">\(\mathbf{G}(\mathbf{x})=\operatorname{diag}\;\bigl(\sigma({\color{#842B40}\mathbf{W}_g}\mathbf{x}+{\color{#842B40}\mathbf{b}})\bigr)\)</div>
+<div class="gate-initial-parameters">
+<div class="gate-init-rule">
+<span>\(\mathbf{W}_g=\mathbf{0},\quad b_i=-3\)</span>
+<span class="gate-init-arrow">\(\longrightarrow\)</span>
+<span>\(\sigma(-3)\approx0.047\)</span>
+</div>
+<p class="gate-init-hyperparameter">Initial bias: a hyperparameter.</p>
+</div>
+</div>
+<div class="gate-init-consequence">
+<p>Initially: \(\boldsymbol{\Delta}(\mathbf{x})=\mathbf{A}\mathbf{G}(\mathbf{x})\mathbf{B}\approx0.047\,\mathbf{A}\mathbf{B}\)</p>
+<span class="gate-init-arrow">\(\longrightarrow\)</span>
+<p>Update scaled down</p>
+</div>
+</div>
+<div class="gate-opening-diagram" role="img" aria-label="Sigmoid of the ith entry of W g x plus b. The requested zero-weight initialization with bias minus three gives every gate a value of about 0.047. The initial update is about 0.047 times A B; the small gates scale it down without implying that it is exactly zero. Training can increase a gate when its correction helps the new task. The later point is illustrative, not measured or prescribed.">
+<svg viewBox="0 0 1144 370" aria-hidden="true">
+<defs><marker id="gate-learning-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1L11 6L1 11" fill="none" stroke="#842B40" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<g class="gate-opening-base">
+<path d="M105 262H1050M1042 255L1050 262L1042 269M105 262V30M98 38L105 30L112 38" fill="none" stroke="#7F8A94" stroke-width="1.7"/>
+<path d="M105 60H1000M562.5 262V161" fill="none" stroke="#D8DCDF" stroke-width="1.2" stroke-dasharray="4 5"/>
+<path d="M125.00 261.50 L132.29 261.45 L139.58 261.39 L146.87 261.33 L154.17 261.26 L161.46 261.18 L168.75 261.09 L176.04 261.00 L183.33 260.89 L190.62 260.78 L197.92 260.65 L205.21 260.51 L212.50 260.35 L219.79 260.18 L227.08 259.99 L234.37 259.78 L241.67 259.55 L248.96 259.30 L256.25 259.02 L263.54 258.71 L270.83 258.37 L278.12 257.99 L285.42 257.58 L292.71 257.13 L300.00 256.63 L307.29 256.08 L314.58 255.48 L321.87 254.81 L329.17 254.09 L336.46 253.29 L343.75 252.42 L351.04 251.46 L358.33 250.42 L365.62 249.28 L372.92 248.03 L380.21 246.68 L387.50 245.20 L394.79 243.59 L402.08 241.85 L409.37 239.96 L416.67 237.92 L423.96 235.72 L431.25 233.35 L438.54 230.80 L445.83 228.07 L453.12 225.15 L460.42 222.04 L467.71 218.74 L475.00 215.24 L482.29 211.55 L489.58 207.67 L496.87 203.61 L504.17 199.37 L511.46 194.97 L518.75 190.42 L526.04 185.74 L533.33 180.93 L540.62 176.04 L547.92 171.07 L555.21 166.05 L562.50 161.00 L569.79 155.95 L577.08 150.93 L584.38 145.96 L591.67 141.07 L598.96 136.26 L606.25 131.58 L613.54 127.03 L620.83 122.63 L628.13 118.39 L635.42 114.33 L642.71 110.45 L650.00 106.76 L657.29 103.26 L664.58 99.96 L671.88 96.85 L679.17 93.93 L686.46 91.20 L693.75 88.65 L701.04 86.28 L708.33 84.08 L715.63 82.04 L722.92 80.15 L730.21 78.41 L737.50 76.80 L744.79 75.32 L752.08 73.97 L759.38 72.72 L766.67 71.58 L773.96 70.54 L781.25 69.58 L788.54 68.71 L795.83 67.91 L803.13 67.19 L810.42 66.52 L817.71 65.92 L825.00 65.37 L832.29 64.87 L839.58 64.42 L846.88 64.01 L854.17 63.63 L861.46 63.29 L868.75 62.98 L876.04 62.70 L883.33 62.45 L890.63 62.22 L897.92 62.01 L905.21 61.82 L912.50 61.65 L919.79 61.49 L927.08 61.35 L934.38 61.22 L941.67 61.11 L948.96 61.00 L956.25 60.91 L963.54 60.82 L970.83 60.74 L978.13 60.67 L985.42 60.61 L992.71 60.55 L1000.00 60.50" fill="none" stroke="#B3BBC1" stroke-width="3"/>
+</g>
+<g class="gate-opening-start">
+<path d="M105 252.42H343.75V262" fill="none" stroke="#842B40" stroke-width="1.6" stroke-dasharray="4 4"/>
+<path d="M343.75 222V239" fill="none" stroke="#7F8A94" stroke-width="1.5"/>
+<circle cx="343.75" cy="252.42" r="7" fill="#842B40"/>
+</g>
+<g class="gate-opening-change">
+<path d="M343.75 252.42 L348.59 251.80 L353.44 251.13 L358.28 250.43 L363.12 249.68 L367.97 248.89 L372.81 248.05 L377.66 247.16 L382.50 246.23 L387.34 245.23 L392.19 244.18 L397.03 243.07 L401.87 241.90 L406.72 240.67 L411.56 239.37 L416.41 238.00 L421.25 236.56 L426.09 235.04 L430.94 233.45 L435.78 231.78 L440.62 230.04 L445.47 228.21 L450.31 226.30 L455.16 224.30 L460.00 222.22 L464.84 220.06 L469.69 217.81 L474.53 215.47 L479.37 213.05 L484.22 210.55 L489.06 207.96 L493.91 205.29 L498.75 202.54 L503.59 199.71 L508.44 196.82 L513.28 193.85 L518.12 190.82 L522.97 187.73 L527.81 184.58 L532.66 181.39 L537.50 178.15 L542.34 174.87 L547.19 171.57 L552.03 168.24 L556.87 164.89 L561.72 161.54 L566.56 158.19 L571.41 154.84 L576.25 151.51 L581.09 148.19 L585.94 144.91 L590.78 141.66 L595.63 138.45 L600.47 135.28 L605.31 132.17 L610.16 129.12 L615.00 126.13 L619.84 123.21 L624.69 120.36 L629.53 117.59 L634.38 114.90 L639.22 112.28 L644.06 109.75 L648.91 107.30 L653.75 104.94 L658.59 102.66 L663.44 100.46 L668.28 98.36 L673.13 96.34 L677.97 94.40 L682.81 92.54" fill="none" stroke="#842B40" stroke-width="4" stroke-linecap="round" marker-end="url(#gate-learning-arrow)"/>
+<circle cx="708.33" cy="84.08" r="8" fill="#FAF9F6" stroke="#842B40" stroke-width="2.7"/>
+<path d="M722 95L787 133" fill="none" stroke="#842B40" stroke-width="1.5"/>
+</g>
+</svg>
+<span class="gate-opening-label gate-opening-base" style="left:105px;top:8px;font-size:24px">Gate value</span>
+<span class="gate-opening-label gate-opening-base" style="left:84px;top:60px">\(1\)</span>
+<span class="gate-opening-label gate-opening-base" style="left:84px;top:284px">\(0\)</span>
+<span class="gate-opening-label gate-opening-base" style="left:562.5px;top:284px">\(0\)</span>
+<span class="gate-opening-label gate-opening-start accent-text" style="left:343.75px;top:284px">\(-3\)</span>
+<span class="gate-opening-label gate-opening-start accent-text" style="left:50px;top:252.42px">\(0.047\)</span>
+<div class="gate-score-label gate-opening-base"><span>Gate score</span><span>\(\bigl(\mathbf{W}_g\mathbf{x}+\mathbf{b}\bigr)_i\)</span></div>
+<div class="gate-initial-caption"><p>At initialization</p></div>
+<div class="gate-learned-caption"><h2>Open if useful</h2><p>By learning \(\mathbf{W}_g\) and \(\mathbf{b}\)</p></div>
+</div>
+</div><div class="slide__number">15 / 24</div>
+<aside class="speaker-notes">This slide now uses the zero-weight gate initialization explicitly requested by Ali: W_g = 0 and every entry of b equals minus three. Here b_i is the ith entry of the bias vector b; every entry starts at minus three. Every initial score is exactly minus three, independently of x, and each gate is sigmoid(-3), approximately 0.0474. This differs from the supplied paper's Table 11, which reports Kaiming-uniform W_g for the Llama and Mistral experiments. Present it as the requested zero-initialization setting; do not attribute zero W_g to the reported experimental setup. First reveal only G(x) = diag(sigma(W_g x + b)) at the top left to recall the gate computation and its learned parameters. On the next click reveal the compact initialization equation to its right and the short Initial bias: a hyperparameter note. Explain verbally that b_i=-3 applies to every bias entry and that the initial gate values are nearly closed. The next row states Delta(x) = A G(x) B approximately 0.047 A B. With W_g = 0 and all bias entries equal to minus three, G(x) = sigmoid(-3) I, so Delta(x) = sigmoid(-3) A B; only the displayed coefficient is rounded. The gates scale down the initial correction. This does not assert an exactly zero update or exact preservation of the pre-trained output. A separately zero-initialized adapter output would make the update zero, but that additional condition is not assumed on this slide. The size of the output change also depends on A B x, so a small gate alone is not an absolute closeness guarantee. Reveal the curve and initial point together with the Delta(x) row. On the next click, reveal the possible learned opening. The horizontal axis is labeled (W_g x + b)_i, the ith gate score. The curve applies sigmoid to that score; the axes are score and gate value, not training time. W_g, b, A and B are trained jointly on new-task data. The caption explicitly links opening to learning W_g and b: W_g changes how the score depends on the input, while b changes its offset. If a larger gate helps reduce task loss, training can open it for that input. The later hollow point is illustrative, not a measurement or prescribed final value. This is not a guarantee that all gates open, move monotonically, or preserve every earlier ability after training. The paper's bias is a task-dependent hyperparameter; minus three is the Llama/Mistral setting. Sources: user-specified zero initialization; DISeL §3 for the gate formula; Table 11 for comparison with the reported experiment.</aside>
+</section>
+
+<section id="16" class="slide" data-title="Math learning with retention near the base model" data-seconds="140">
+  <h1 class="slide__title">Math learning with retention near the base model</h1><div class="slide__rule"></div>
+  <div class="slide__content plot-split">
+    <img class="plot" src="assets/llama_tradeoff_highlighted.svg" alt="Llama math tradeoff: DISeL points cluster near base retention while reaching around 60 percent GSM8K accuracy. Other adapters lose retention or task accuracy.">
+    <div class="plot-aside"><p class="result-context">Llama 2-7B · Math fine-tuning</p><p class="stat">\(\approx60\%\)</p><p>GSM8K accuracy</p><p class="stat" style="margin-top:27px">\(\approx63.3\%\)</p><p>Mean accuracy on 14 retention benchmarks</p></div>
+    <div class="takeaway"><span class="callout-label">Main result</span>DISeL offers the best of both worlds: strong adaptation and strong retention.</div>
+  </div>
+  <div class="slide__number">16 / 24</div>
+  <aside class="speaker-notes">Train on MetaMathQA and evaluate math with GSM8K. The retention score averages 14 held-out benchmarks. The 7B plots do not show seed uncertainty, and checkpoints are selected by target-task performance. Point first to the vertical baseline, then explain that moving upward means better math and moving right means better retention. Red points are DISeL; shapes indicate ranks from 16 to 256. The burgundy outline and DISeL label are added presentation annotations enclosing its rank sweep; they are not a confidence region. Original data, axes, legends and marker colors are unchanged. Describe the joint pattern rather than just one selected point. AdaLoRA is competitive on retention but weaker on math here. LoRA and DoRA can learn math well while losing more retention at some ranks. Full FT uses a smaller selected learning rate, so its position should not be interpreted as a universal ranking. Around 60 and 63.3 are rounded descriptions from the manuscript. Sources: DISeL, Fig. 2a · Original figure; callout values are approximate.</aside>
+</section>
+
+<section id="17" class="slide" data-title="The same tradeoff improves on code generation" data-seconds="125">
+  <h1 class="slide__title">The same tradeoff improves on code generation</h1><div class="slide__rule"></div>
+  <div class="slide__content plot-split">
+    <img class="plot" src="assets/mistral_tradeoff_with_legend_highlighted.svg" alt="Mistral code tradeoff: DISeL reaches roughly 60–70 percent HumanEval across ranks while retaining near 70 percent mean accuracy. The shared method and rank legend appears inside the lower-left of the plot.">
+    <div class="plot-aside"><p class="result-context">Mistral-7B · Code fine-tuning</p><p class="stat">\(60\text{–}70\%\)</p><p>HumanEval pass@1</p><p class="stat" style="margin-top:27px">\(\approx70\%\)</p><p>Mean accuracy on 14 retention benchmarks</p></div>
+    <div class="takeaway"><span class="callout-label">Adaptation matters too</span>AdaLoRA preserves earlier abilities but struggles to learn the new task.</div>
+  </div>
+  <div class="slide__number">17 / 24</div>
+  <aside class="speaker-notes">Train Mistral on Magicoder and evaluate code generation with HumanEval. Retention is the same 14-benchmark average used in the previous slide. The plot contains the full rank sweep. The 60–70 percent HumanEval callout is a rounded range across DISeL ranks, not a confidence interval; the best configuration is slightly above 70 percent. Approximately 70 percent retention is also a coarse description, not an exact score or a claim of zero forgetting. HumanEval is greedy pass@1 on 164 problems; do not infer statistical significance from the plotted gap. The method and rank legend and the fine-tuning-accuracy axis label are copied from the shared originals in Fig. 2a into Fig. 2b, keeping their colors, shapes, and typography. The burgundy outline and DISeL label identify the DISeL rank sweep; they are presentation annotations, not a confidence region. The code-results outline is a plain vector path with a small gap for the original better label; it does not rely on an SVG mask. Original marker and legend colors remain unchanged. No data points are changed or covered. Source: DISeL Fig. 2 and the accompanying paragraph.</aside>
+</section>
+
+<section id="18" class="slide" data-title="The learned gates respond to the input and layer" data-seconds="115">
+  <h1 class="slide__title">The learned gates respond to the input and layer</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <p class="small"><strong>Rank-32 Llama math adapter · Held-out math, general text, and code</strong></p>
+    <div class="gate-distribution-pair">
+      <div class="gate-distribution-panel gate-early-panel">
+        <img class="plot" src="assets/gate_domains_early.svg" alt="Early layers 0–10: gate histograms for math, general text, and code. The circled region highlights the small near-open tail at gate values close to one.">
+        <svg class="gate-distribution-highlight" viewBox="0 0 136.5 118" aria-hidden="true"><ellipse cx="128.5" cy="91" rx="6.5" ry="6.6"/></svg>
+      </div>
+      <div class="gate-distribution-panel gate-late-panel">
+        <img class="plot" src="assets/gate_domains_late.svg" alt="Late layers 22–31: gate histograms for math, general text, and code. The circled near-open tail shows substantially more density for math than general text, with code in between.">
+        <svg class="gate-distribution-highlight" viewBox="0 0 124 118" aria-hidden="true"><ellipse cx="115" cy="71.2" rx="6.5" ry="27.1"/></svg>
+      </div>
+    </div>
+    <div class="grid2" style="gap:35px;margin-top:9px"><p class="small"><strong class="green">Input selectivity:</strong> math opens gates more than general text.</p><p class="small"><strong class="weight">Layer selectivity:</strong> larger gaps in later layers.</p></div>
+    <div class="gate-density-note">
+      <p>\(\displaystyle \text{Density}=\frac{\text{fraction of values in bin}}{\text{bin width}}\)</p>
+    </div>
+  </div>
+  <div class="slide__number">18 / 24</div>
+  <aside class="speaker-notes">Compare the early (0–10) and late (22–31) layer panels; the middle panel has been omitted, and the two remaining panels are shown at equal scale with their original histograms, axes, and legends. Reveal the early panel and histogram-reading note first, then the late panel. A bin is an interval of gate values. Its fraction is the number of gate values in that interval divided by all recorded gate values for the same color in the same panel. Density is that fraction divided by bin width; it is not a raw count or millions. With equal bin widths, twice the height means twice the fraction of values. Each color is normalized separately within each panel: the sum of bar height times bin width is one. The numerical example is illustrative, not a measured count: 200 of 1,000 values gives a fraction of 0.20; with width 0.02, density is 10 and the bar area is 0.20. The unfilled burgundy ovals highlight near-open gates, close to one, in each panel. Point out the small early tail and the larger late-layer difference between math and general text; the legend means support the broader comparison. The ovals are presentation annotations, not confidence regions, and do not change the underlying plots. Reveal the input- and layer-selectivity captions after both panels. Explain that these are histograms of gate values, not classification probabilities over domains. The mean activation is higher on held-out math than general text, and code falls between them in this Llama example. The pattern is input- and depth-dependent. Be cautious about causal interpretation and about different token-selection protocols across domains. The Mistral code adapter is less separated: math and code have similar mean activation. The appendix also shows module differences and stable sample fingerprints. Gate activity alone does not measure the norm or causal importance of a rank's update. Sources: DISeL, Fig. 3 · Math/code: response tokens; general text: all tokens.</aside>
+</section>
+
+<section id="19" class="slide disel-recap-slide" data-title="DISeL: learn when to adapt" data-seconds="30">
+  <h1 class="slide__title">DISeL: learn when to adapt</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <div class="research-principles disel-recap-columns">
+      <article>
+        <svg class="research-principle-icon" viewBox="0 0 110 82" aria-hidden="true"><path d="M15 20H95M15 41H95M15 62H95"/><g class="principle-accent" fill="#F5ECEF"><circle cx="34" cy="20" r="6"/><circle cx="76" cy="41" r="6"/><circle cx="51" cy="62" r="6"/></g></svg>
+        <h2>Input-dependent</h2><p>Adjusts the update<br>to each input.</p>
+      </article>
+      <article>
+        <svg class="research-principle-icon" viewBox="0 0 110 82" aria-hidden="true"><path d="M28 9H68L82 23V73H28Z M68 9V23H82 M38 33H70 M38 43H65 M38 53H51"/><path class="principle-accent" d="M52 62L59 69L74 52"/></svg>
+        <h2>Training data only</h2><p>No pre-training data<br>needed.</p>
+      </article>
+      <article>
+        <svg class="research-principle-icon" viewBox="0 0 110 82" aria-hidden="true"><path d="M14 68H96"/><rect x="25" y="23" width="20" height="45" rx="2"/><rect x="65" y="23" width="20" height="45" rx="2"/><path class="principle-accent" d="M28 12L33 17L43 7 M68 12L73 17L83 7"/></svg>
+        <h2>Less forgetting</h2><p>Keeps strong performance<br>on the new task.</p>
+      </article>
+    </div>
+  </div>
+  <div class="slide__number">19 / 24</div>
+  <aside class="speaker-notes">Close the practical DISeL part in about thirty seconds using three side-by-side columns, revealed one at a time. Match the future-directions slide with small icons, burgundy headings and thin vertical dividers. First, learned input-dependent gates scale the LoRA correction rank by rank while the base weights stay frozen. Second, train the LoRA factors and gate parameters jointly using the new-task loss only. No original pre-training data is required for this fine-tuning; retention benchmarks are used separately for evaluation, as explained on slide 7. Third, the results just shown demonstrate a better adaptation-retention tradeoff in the studied settings: strong performance on the new task with less forgetting of earlier abilities. This is an empirical summary, not a guarantee of zero forgetting or uniform superiority on every task. Keep the recap verbal, without reintroducing equations. The sliders represent input-dependent control, the document represents training data, and the two checked bars represent learning and retention; these are small conceptual icons, not measured plots. Transition to the two related theoretical papers. Sources: DISeL §3, Eq. (7), and Figs. 1–3.</aside>
+</section>
+
+<section id="20" class="slide paper-summary-slide" data-title="LoRA vs. Full Fine-Tuning" data-seconds="60">
+<h1 class="slide__title">LoRA vs. Full Fine-Tuning</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="paper-summary-question">Can fewer trainable parameters lead to better accuracy?</p>
+<div class="paper-summary-panels">
+<article><h2>Full fine-tuning</h2><div class="paper-summary-sketch" role="img" aria-label="Nine adjustable controls illustrate an unrestricted update with many free parameters. This is a conceptual drawing, not experimental data."><svg viewBox="0 0 510 170" aria-hidden="true"><rect class="update-control-panel" x="48" y="7" width="414" height="141" rx="5"/><g class="update-controls"><path d="M91 20V134"/><rect x="81" y="47" width="20" height="10" rx="2"/><path d="M132 20V134"/><rect x="122" y="97" width="20" height="10" rx="2"/><path d="M173 20V134"/><rect x="163" y="38" width="20" height="10" rx="2"/><path d="M214 20V134"/><rect x="204" y="76" width="20" height="10" rx="2"/><path d="M255 20V134"/><rect x="245" y="110" width="20" height="10" rx="2"/><path d="M296 20V134"/><rect x="286" y="59" width="20" height="10" rx="2"/><path d="M337 20V134"/><rect x="327" y="27" width="20" height="10" rx="2"/><path d="M378 20V134"/><rect x="368" y="91" width="20" height="10" rx="2"/><path d="M419 20V134"/><rect x="409" y="67" width="20" height="10" rx="2"/></g></svg></div><p>More freedom to change.<br>Can also fit noise in the data.</p></article>
+<article><h2>LoRA</h2><div class="paper-summary-sketch" role="img" aria-label="Three adjustable controls illustrate a low-rank update with fewer free parameters. The controls do not represent individual matrix entries."><svg viewBox="0 0 510 170" aria-hidden="true"><rect class="update-control-panel" x="48" y="7" width="414" height="141" rx="5"/><g class="update-controls update-controls--restricted"><path d="M177 20V134"/><rect x="167" y="53" width="20" height="10" rx="2"/><path d="M255 20V134"/><rect x="245" y="99" width="20" height="10" rx="2"/><path d="M333 20V134"/><rect x="323" y="73" width="20" height="10" rx="2"/></g></svg></div><p>Fewer free parameters.<br>Can miss useful changes if too restricted.</p></article>
+</div>
+<div class="takeaway paper-summary-message paper-summary-message--boxed"><span class="callout-label">Main result</span><p>We show when LoRA can outperform full fine-tuning.</p></div>
+</div><div class="slide__number">20 / 24</div>
+<aside class="speaker-notes">Give one broad message from LoRA vs. Full Fine-Tuning: A Theoretical Perspective. Reducing the freedom of the update can improve accuracy on unseen data, beyond reducing the cost of training. The sliders are an analogy for free parameters, not actual learned values, an experiment, or a subset of editable matrix entries. Both full fine-tuning and LoRA can change every entry of the effective weight matrix. Full fine-tuning permits an unrestricted correction; LoRA imposes a low-rank structure. When the needed task change is mostly low-rank, this restriction can reduce noise fitting while retaining the useful change. If the rank is too small for the task, it can instead miss useful directions and hurt performance. The advantage depends on the task change, sample size and noise. The paper proves comparisons in linear regression and supplies supporting language-model experiments; it does not show that LoRA always wins. Omit risk definitions, equations, plots and numerical results. Sources: papers/lora_vs_fft.pdf, Abstract and §§1–4. Both diagrams are original conceptual illustrations.</aside>
+</section>
+
+<section id="21" class="slide paper-summary-slide" data-title="Theory of Adaptation and Retention" data-seconds="60">
+<h1 class="slide__title">Theory of Adaptation and Retention</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="paper-summary-question">When can a model learn without forgetting?</p>
+<div class="paper-summary-panels">
+<article><h2>Little overlap</h2><div class="paper-summary-sketch task-overlap-sketch" role="img" aria-label="Illustrative old and new input distributions with little overlap. The gray and burgundy bell curves are far apart."><svg viewBox="0 0 510 170" aria-hidden="true">
+<path d="M20 135.87 C26.67 135.33 33.33 134.48 40 132.83 C46.67 131.17 53.33 128.68 60 124.74 C66.67 120.81 73.33 115.36 80 108.32 C86.67 101.27 93.33 92.59 100 83.49 C106.67 74.39 113.33 64.94 120 57.42 C126.67 49.90 133.33 44.45 140 42.67 C141.67 42.23 143.33 42.00 145 42.00 C150.00 42.00 155.00 44.08 160 47.87 C166.67 52.92 173.33 60.99 180 69.87 C186.67 78.75 193.33 88.32 200 96.70 C206.67 105.07 213.33 112.24 220 117.71 C226.67 123.18 233.33 127.00 240 129.64 C245.00 131.62 250.00 132.96 255 133.92 C256.67 134.24 258.33 134.52 260 134.76 C266.67 135.74 273.33 136.18 280 136.46 C286.67 136.73 293.33 136.83 300 136.90 C306.67 136.96 313.33 136.97 320 136.98 C326.67 136.99 333.33 137.00 340 137.00 C346.67 137.00 353.33 137.00 360 137.00 C361.67 137.00 363.33 137.00 365 137.00 C370.00 137.00 375.00 137.00 380 137.00 C386.67 137.00 393.33 137.00 400 137.00 C406.67 137.00 413.33 137.00 420 137.00 C426.67 137.00 433.33 137.00 440 137.00 C446.67 137.00 453.33 137.00 460 137.00 C466.67 137.00 473.33 137.00 480 137.00 C483.33 137.00 486.67 137.00 490 137.00 L490 137 L20 137Z" class="old-density-fill"/>
+<path d="M20 137.00 C26.67 137.00 33.33 137.00 40 137.00 C46.67 137.00 53.33 137.00 60 137.00 C66.67 137.00 73.33 137.00 80 137.00 C86.67 137.00 93.33 137.00 100 137.00 C106.67 137.00 113.33 137.00 120 137.00 C126.67 137.00 133.33 137.00 140 137.00 C141.67 137.00 143.33 137.00 145 137.00 C150.00 137.00 155.00 137.00 160 137.00 C166.67 137.00 173.33 137.00 180 136.99 C186.67 136.99 193.33 136.98 200 136.96 C206.67 136.93 213.33 136.89 220 136.75 C226.67 136.62 233.33 136.40 240 135.87 C245.00 135.47 250.00 134.88 255 133.92 C256.67 133.60 258.33 133.24 260 132.83 C266.67 131.17 273.33 128.68 280 124.74 C286.67 120.81 293.33 115.36 300 108.32 C306.67 101.27 313.33 92.59 320 83.49 C326.67 74.39 333.33 64.94 340 57.42 C346.67 49.90 353.33 44.45 360 42.67 C361.67 42.23 363.33 42.00 365 42.00 C370.00 42.00 375.00 44.08 380 47.87 C386.67 52.92 393.33 60.99 400 69.87 C406.67 78.75 413.33 88.32 420 96.70 C426.67 105.07 433.33 112.24 440 117.71 C446.67 123.18 453.33 127.00 460 129.64 C466.67 132.28 473.33 133.79 480 134.76 C483.33 135.25 486.67 135.60 490 135.87 L490 137 L20 137Z" class="new-density-fill"/>
+<path d="M20 137.00 C26.67 137.00 33.33 137.00 40 137.00 C46.67 137.00 53.33 137.00 60 137.00 C66.67 137.00 73.33 137.00 80 137.00 C86.67 137.00 93.33 137.00 100 137.00 C106.67 137.00 113.33 137.00 120 137.00 C126.67 137.00 133.33 137.00 140 137.00 C141.67 137.00 143.33 137.00 145 137.00 C150.00 137.00 155.00 137.00 160 137.00 C166.67 137.00 173.33 137.00 180 136.99 C186.67 136.99 193.33 136.98 200 136.96 C206.67 136.93 213.33 136.89 220 136.75 C226.67 136.62 233.33 136.40 240 135.87 C245.00 135.47 250.00 134.88 255 133.92 C256.67 134.24 258.33 134.52 260 134.76 C266.67 135.74 273.33 136.18 280 136.46 C286.67 136.73 293.33 136.83 300 136.90 C306.67 136.96 313.33 136.97 320 136.98 C326.67 136.99 333.33 137.00 340 137.00 C346.67 137.00 353.33 137.00 360 137.00 C361.67 137.00 363.33 137.00 365 137.00 C370.00 137.00 375.00 137.00 380 137.00 C386.67 137.00 393.33 137.00 400 137.00 C406.67 137.00 413.33 137.00 420 137.00 C426.67 137.00 433.33 137.00 440 137.00 C446.67 137.00 453.33 137.00 460 137.00 C466.67 137.00 473.33 137.00 480 137.00 C483.33 137.00 486.67 137.00 490 137.00 L490 137 L20 137Z" class="shared-density-fill"/>
+<path d="M20 137H490" class="distribution-axis"/>
+<path d="M20 135.87 C26.67 135.33 33.33 134.48 40 132.83 C46.67 131.17 53.33 128.68 60 124.74 C66.67 120.81 73.33 115.36 80 108.32 C86.67 101.27 93.33 92.59 100 83.49 C106.67 74.39 113.33 64.94 120 57.42 C126.67 49.90 133.33 44.45 140 42.67 C141.67 42.23 143.33 42.00 145 42.00 C150.00 42.00 155.00 44.08 160 47.87 C166.67 52.92 173.33 60.99 180 69.87 C186.67 78.75 193.33 88.32 200 96.70 C206.67 105.07 213.33 112.24 220 117.71 C226.67 123.18 233.33 127.00 240 129.64 C245.00 131.62 250.00 132.96 255 133.92 C256.67 134.24 258.33 134.52 260 134.76 C266.67 135.74 273.33 136.18 280 136.46 C286.67 136.73 293.33 136.83 300 136.90 C306.67 136.96 313.33 136.97 320 136.98 C326.67 136.99 333.33 137.00 340 137.00 C346.67 137.00 353.33 137.00 360 137.00 C361.67 137.00 363.33 137.00 365 137.00 C370.00 137.00 375.00 137.00 380 137.00 C386.67 137.00 393.33 137.00 400 137.00 C406.67 137.00 413.33 137.00 420 137.00 C426.67 137.00 433.33 137.00 440 137.00 C446.67 137.00 453.33 137.00 460 137.00 C466.67 137.00 473.33 137.00 480 137.00 C483.33 137.00 486.67 137.00 490 137.00" class="old-density-curve"/>
+<path d="M20 137.00 C26.67 137.00 33.33 137.00 40 137.00 C46.67 137.00 53.33 137.00 60 137.00 C66.67 137.00 73.33 137.00 80 137.00 C86.67 137.00 93.33 137.00 100 137.00 C106.67 137.00 113.33 137.00 120 137.00 C126.67 137.00 133.33 137.00 140 137.00 C141.67 137.00 143.33 137.00 145 137.00 C150.00 137.00 155.00 137.00 160 137.00 C166.67 137.00 173.33 137.00 180 136.99 C186.67 136.99 193.33 136.98 200 136.96 C206.67 136.93 213.33 136.89 220 136.75 C226.67 136.62 233.33 136.40 240 135.87 C245.00 135.47 250.00 134.88 255 133.92 C256.67 133.60 258.33 133.24 260 132.83 C266.67 131.17 273.33 128.68 280 124.74 C286.67 120.81 293.33 115.36 300 108.32 C306.67 101.27 313.33 92.59 320 83.49 C326.67 74.39 333.33 64.94 340 57.42 C346.67 49.90 353.33 44.45 360 42.67 C361.67 42.23 363.33 42.00 365 42.00 C370.00 42.00 375.00 44.08 380 47.87 C386.67 52.92 393.33 60.99 400 69.87 C406.67 78.75 413.33 88.32 420 96.70 C426.67 105.07 433.33 112.24 440 117.71 C446.67 123.18 453.33 127.00 460 129.64 C466.67 132.28 473.33 133.79 480 134.76 C483.33 135.25 486.67 135.60 490 135.87" class="new-density-curve"/>
+<text x="145" y="25" text-anchor="middle" class="old-input-label">Old</text>
+<text x="365" y="25" text-anchor="middle" class="new-input-label">New</text>
+<text x="490" y="165" text-anchor="end" class="distribution-axis-label">Inputs</text>
+</svg></div><p>The model can learn the new task<br>and still do the old tasks well.</p></article>
+<article><h2>More overlap</h2><div class="paper-summary-sketch task-overlap-sketch" role="img" aria-label="Illustrative old and new input distributions with more overlap. The shaded shared area contains inputs where old and new desired outputs may conflict."><svg viewBox="0 0 510 170" aria-hidden="true">
+<path d="M20 137.00 C26.67 137.00 33.33 136.99 40 136.98 C46.67 136.97 53.33 136.96 60 136.90 C66.67 136.83 73.33 136.73 80 136.46 C86.67 136.18 93.33 135.74 100 134.76 C106.67 133.79 113.33 132.28 120 129.64 C126.67 127.00 133.33 123.18 140 117.71 C146.67 112.24 153.33 105.07 160 96.70 C166.67 88.32 173.33 78.75 180 69.87 C186.67 60.99 193.33 52.92 200 47.87 C205.00 44.08 210.00 42.00 215 42.00 C216.67 42.00 218.33 42.23 220 42.67 C226.67 44.45 233.33 49.90 240 57.42 C245.00 63.06 250.00 69.79 255 76.64 C256.67 78.92 258.33 81.21 260 83.49 C266.67 92.59 273.33 101.27 280 108.32 C285.00 113.60 290.00 118.00 295 121.52 C296.67 122.69 298.33 123.76 300 124.74 C306.67 128.68 313.33 131.17 320 132.83 C326.67 134.48 333.33 135.33 340 135.87 C346.67 136.40 353.33 136.62 360 136.75 C366.67 136.89 373.33 136.93 380 136.96 C386.67 136.98 393.33 136.99 400 136.99 C406.67 137.00 413.33 137.00 420 137.00 C426.67 137.00 433.33 137.00 440 137.00 C446.67 137.00 453.33 137.00 460 137.00 C466.67 137.00 473.33 137.00 480 137.00 C483.33 137.00 486.67 137.00 490 137.00 L490 137 L20 137Z" class="old-density-fill"/>
+<path d="M20 137.00 C26.67 137.00 33.33 137.00 40 137.00 C46.67 137.00 53.33 137.00 60 137.00 C66.67 137.00 73.33 137.00 80 137.00 C86.67 137.00 93.33 137.00 100 137.00 C106.67 137.00 113.33 136.99 120 136.98 C126.67 136.97 133.33 136.96 140 136.90 C146.67 136.83 153.33 136.73 160 136.46 C166.67 136.18 173.33 135.74 180 134.76 C186.67 133.79 193.33 132.28 200 129.64 C205.00 127.66 210.00 125.03 215 121.52 C216.67 120.35 218.33 119.08 220 117.71 C226.67 112.24 233.33 105.07 240 96.70 C245.00 90.41 250.00 83.48 255 76.64 C256.67 74.36 258.33 72.09 260 69.87 C266.67 60.99 273.33 52.92 280 47.87 C285.00 44.08 290.00 42.00 295 42.00 C296.67 42.00 298.33 42.23 300 42.67 C306.67 44.45 313.33 49.90 320 57.42 C326.67 64.94 333.33 74.39 340 83.49 C346.67 92.59 353.33 101.27 360 108.32 C366.67 115.36 373.33 120.81 380 124.74 C386.67 128.68 393.33 131.17 400 132.83 C406.67 134.48 413.33 135.33 420 135.87 C426.67 136.40 433.33 136.62 440 136.75 C446.67 136.89 453.33 136.93 460 136.96 C466.67 136.98 473.33 136.99 480 136.99 C483.33 137.00 486.67 137.00 490 137.00 L490 137 L20 137Z" class="new-density-fill"/>
+<path d="M20 137.00 C26.67 137.00 33.33 137.00 40 137.00 C46.67 137.00 53.33 137.00 60 137.00 C66.67 137.00 73.33 137.00 80 137.00 C86.67 137.00 93.33 137.00 100 137.00 C106.67 137.00 113.33 136.99 120 136.98 C126.67 136.97 133.33 136.96 140 136.90 C146.67 136.83 153.33 136.73 160 136.46 C166.67 136.18 173.33 135.74 180 134.76 C186.67 133.79 193.33 132.28 200 129.64 C205.00 127.66 210.00 125.03 215 121.52 C216.67 120.35 218.33 119.08 220 117.71 C226.67 112.24 233.33 105.07 240 96.70 C245.00 90.41 250.00 83.48 255 76.64 C256.67 78.92 258.33 81.21 260 83.49 C266.67 92.59 273.33 101.27 280 108.32 C285.00 113.60 290.00 118.00 295 121.52 C296.67 122.69 298.33 123.76 300 124.74 C306.67 128.68 313.33 131.17 320 132.83 C326.67 134.48 333.33 135.33 340 135.87 C346.67 136.40 353.33 136.62 360 136.75 C366.67 136.89 373.33 136.93 380 136.96 C386.67 136.98 393.33 136.99 400 136.99 C406.67 137.00 413.33 137.00 420 137.00 C426.67 137.00 433.33 137.00 440 137.00 C446.67 137.00 453.33 137.00 460 137.00 C466.67 137.00 473.33 137.00 480 137.00 C483.33 137.00 486.67 137.00 490 137.00 L490 137 L20 137Z" class="shared-density-fill"/>
+<path d="M20 137H490" class="distribution-axis"/>
+<path d="M20 137.00 C26.67 137.00 33.33 136.99 40 136.98 C46.67 136.97 53.33 136.96 60 136.90 C66.67 136.83 73.33 136.73 80 136.46 C86.67 136.18 93.33 135.74 100 134.76 C106.67 133.79 113.33 132.28 120 129.64 C126.67 127.00 133.33 123.18 140 117.71 C146.67 112.24 153.33 105.07 160 96.70 C166.67 88.32 173.33 78.75 180 69.87 C186.67 60.99 193.33 52.92 200 47.87 C205.00 44.08 210.00 42.00 215 42.00 C216.67 42.00 218.33 42.23 220 42.67 C226.67 44.45 233.33 49.90 240 57.42 C245.00 63.06 250.00 69.79 255 76.64 C256.67 78.92 258.33 81.21 260 83.49 C266.67 92.59 273.33 101.27 280 108.32 C285.00 113.60 290.00 118.00 295 121.52 C296.67 122.69 298.33 123.76 300 124.74 C306.67 128.68 313.33 131.17 320 132.83 C326.67 134.48 333.33 135.33 340 135.87 C346.67 136.40 353.33 136.62 360 136.75 C366.67 136.89 373.33 136.93 380 136.96 C386.67 136.98 393.33 136.99 400 136.99 C406.67 137.00 413.33 137.00 420 137.00 C426.67 137.00 433.33 137.00 440 137.00 C446.67 137.00 453.33 137.00 460 137.00 C466.67 137.00 473.33 137.00 480 137.00 C483.33 137.00 486.67 137.00 490 137.00" class="old-density-curve"/>
+<path d="M20 137.00 C26.67 137.00 33.33 137.00 40 137.00 C46.67 137.00 53.33 137.00 60 137.00 C66.67 137.00 73.33 137.00 80 137.00 C86.67 137.00 93.33 137.00 100 137.00 C106.67 137.00 113.33 136.99 120 136.98 C126.67 136.97 133.33 136.96 140 136.90 C146.67 136.83 153.33 136.73 160 136.46 C166.67 136.18 173.33 135.74 180 134.76 C186.67 133.79 193.33 132.28 200 129.64 C205.00 127.66 210.00 125.03 215 121.52 C216.67 120.35 218.33 119.08 220 117.71 C226.67 112.24 233.33 105.07 240 96.70 C245.00 90.41 250.00 83.48 255 76.64 C256.67 74.36 258.33 72.09 260 69.87 C266.67 60.99 273.33 52.92 280 47.87 C285.00 44.08 290.00 42.00 295 42.00 C296.67 42.00 298.33 42.23 300 42.67 C306.67 44.45 313.33 49.90 320 57.42 C326.67 64.94 333.33 74.39 340 83.49 C346.67 92.59 353.33 101.27 360 108.32 C366.67 115.36 373.33 120.81 380 124.74 C386.67 128.68 393.33 131.17 400 132.83 C406.67 134.48 413.33 135.33 420 135.87 C426.67 136.40 433.33 136.62 440 136.75 C446.67 136.89 453.33 136.93 460 136.96 C466.67 136.98 473.33 136.99 480 136.99 C483.33 137.00 486.67 137.00 490 137.00" class="new-density-curve"/>
+<text x="215" y="25" text-anchor="middle" class="old-input-label">Old</text>
+<text x="295" y="25" text-anchor="middle" class="new-input-label">New</text>
+<text x="255" y="165" text-anchor="middle" class="distribution-overlap-label">Overlap</text><text x="490" y="165" text-anchor="end" class="distribution-axis-label">Inputs</text>
+</svg></div><p>Same input, different required answers:<br>the model cannot get both tasks right.</p></article>
+</div>
+<div class="takeaway paper-summary-message paper-summary-message--boxed"><span class="callout-label">Main result</span><p>We show when linear models can learn new tasks with little forgetting.</p></div>
+</div><div class="slide__number">21 / 24</div>
+<aside class="speaker-notes">Give one accessible overview of Theory of Adaptation and Retention. Some inputs need new behavior, while others should keep their earlier behavior. The left drawing shows old and new input distributions with little overlap. The right drawing has more overlap, shaded as the shared area under the two curves. This creates a possible conflict: if the same observed input requires different old and new outputs, a predictor that receives no task identifier cannot satisfy both at once. Overlap alone is not enough to create conflict; the desired outputs must disagree. The bell curves are original illustrative input densities, not measured results or copied paper figures. Their Gaussian shape is only a visual example, not an assumption imposed on the theorem. The paper characterizes fundamental limits through population overlap and the needed correction, and explains why fixed linear updates can face additional limits. It also gives conditions under which an input-dependent gate, trained only on new-task data with the desired correction fixed, achieves good adaptation while keeping forgetting small. The training statement relies on the paper's population, separation, initialization and regularization assumptions, and is not a guarantee for arbitrary joint adapter-and-gate training. Little distribution overlap alone does not guarantee that a particular trained model finds the right solution. Keep these qualifications verbal and brief; no formal symbols, bounds or metrics are needed on the slide. Sources: papers/theory_adaptation_retention.pdf, Abstract, §§3–5, Proposition 1, Theorems 1 and 3. Both diagrams are original conceptual illustrations.</aside>
+</section>
+
+<section id="22" class="slide research-philosophy-slide" data-title="Future research directions" data-seconds="60">
+<h1 class="slide__title">Future research directions</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="research-philosophy-intro">Models should keep learning and remembering important things.</p>
+<div class="research-principles">
+<article>
+<svg class="research-principle-icon" viewBox="0 0 110 82" role="img" aria-label="A small grid with only a few components highlighted for adaptation.">
+<rect x="27" y="13" width="14" height="14" rx="2"/>
+<rect x="48" y="13" width="14" height="14" rx="2"/>
+<rect x="69" y="13" width="14" height="14" rx="2"/>
+<rect x="27" y="34" width="14" height="14" rx="2"/>
+<rect x="48" y="34" width="14" height="14" rx="2"/>
+<rect x="69" y="34" width="14" height="14" rx="2"/>
+<rect x="27" y="55" width="14" height="14" rx="2"/>
+<rect x="48" y="55" width="14" height="14" rx="2"/>
+<rect x="69" y="55" width="14" height="14" rx="2"/>
+<g class="principle-accent" fill="#F5ECEF">
+<rect x="48" y="13" width="14" height="14" rx="2"/>
+<rect x="69" y="34" width="14" height="14" rx="2"/>
+<rect x="27" y="55" width="14" height="14" rx="2"/>
+</g>
+</svg>
+<h2>Adapt only<br>where needed</h2><p>Learn which parts of a model should change for each task.</p>
+</article>
+<article><svg class="research-principle-icon" viewBox="0 0 110 82" aria-hidden="true"><rect x="3" y="23" width="24" height="35" rx="2"/><rect x="43" y="23" width="24" height="35" rx="2"/><rect x="83" y="23" width="24" height="35" rx="2"/><path d="M10 33H20M10 41H20M10 49H16 M50 33H60M50 41H60M50 49H56 M90 33H100M90 41H100M90 49H96"/><path class="principle-accent" d="M31 40H39M35 36L39 40L35 44 M71 40H79M75 36L79 40L75 44"/></svg><h2>Continual<br>learning</h2><p>Learn new tasks with little forgetting, even without old data.</p></article>
+<article>
+<svg class="research-principle-icon" viewBox="0 0 110 82" role="img" aria-label="Saved notes with a bookmark, representing information remembered for later use.">
+<path d="M34 10V5H85V67H80"/>
+<rect x="26" y="13" width="51" height="62" rx="2"/>
+<path d="M36 45H65M36 54H65M36 63H55"/>
+<path class="principle-accent" fill="#F5ECEF" d="M57 13H69V35L63 30L57 35Z"/>
+</svg>
+<h2>Memory<br>at test time</h2><p>Remember useful information and recall it for later inputs.</p>
+</article>
+</div>
+</div><div class="slide__number">22 / 24</div>
+<aside class="speaker-notes">Return to the opening motivation: adapting models for new needs should build on useful existing knowledge. Present three general future research directions. First, learn where a model needs to change for a task: choose which layers or components to adapt and how much capacity to give them, rather than fixing the same adaptation pattern in advance. Study whether this can reduce unnecessary changes to useful existing behavior while keeping enough capacity to learn the new task. The highlighted grid is a compact symbol of selective adaptation, not a proposed architecture or a claim about individual matrix entries. Second, pursue continual learning: learn new tasks over time with little forgetting, including when earlier task data cannot be replayed. Third, develop memory that lets models retain useful information encountered at test time and recall it for later inputs. The saved-note icon symbolizes remembering useful information; it does not prescribe external storage or a particular architecture. These are general research goals rather than completed solutions or claims of novelty. Source: the outlook selected for this presentation; continual learning and test-time memory also follow the motivation in progress-report/main.tex.</aside>
+</section>
+
+<section id="23" class="slide thank-you-slide" data-title="Thank you" data-seconds="5">
+<div class="closing-cover"><h1>Thank you</h1></div>
+<div class="slide__number">23 / 24</div>
+<aside class="speaker-notes">Thank the committee and invite questions. Keep this slide visible as the discussion begins. The references and appendix follow for questions.</aside>
+</section>
+
+<section id="24" class="slide references-slide" data-title="References" data-seconds="0" data-references>
+<h1 class="slide__title">References</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<!-- BIBLIOGRAPHY:START -->
+<!-- Generated from references.bib; edit that file, then run build.sh. -->
+<div class="references-grid">
+<div class="reference-column"><h2>Methods and research</h2>
+<article class="reference-entry" data-bib-key="devlin2019bert">
+<span class="reference-number">[1]</span><div>
+<p class="reference-author">Devlin et al. (2019). NAACL.</p>
+<p class="reference-title"><a href="https://aclanthology.org/N19-1423/">BERT:
+  Pre-training of Deep Bidirectional Transformers for Language
+  Understanding.</a></p></div></article>
+<article class="reference-entry" data-bib-key="hu2022lora">
+<span class="reference-number">[2]</span><div>
+<p class="reference-author">Hu et al. (2022). ICLR.</p>
+<p class="reference-title"><a href="https://arxiv.org/abs/2106.09685">LoRA:
+  Low-Rank Adaptation of Large Language Models.</a></p></div></article>
+<article class="reference-entry" data-bib-key="zindari2026adapt">
+<span class="reference-number">[3]</span><div>
+<p class="reference-author">Zindari et al. (2026). Under review.</p>
+<p class="reference-title"><a href="https://arxiv.org/abs/2605.19028">Learning
+  When to Adapt.</a></p></div></article>
+<article class="reference-entry" data-bib-key="zindari2026lora">
+<span class="reference-number">[4]</span><div>
+<p class="reference-author">Zindari et al. (2026). Under review.</p>
+<p class="reference-title"><a href="https://arxiv.org/abs/2605.19018">LoRA
+  vs. Full Fine-Tuning: A Theoretical Perspective.</a></p></div></article>
+<article class="reference-entry" data-bib-key="zindari2026retention">
+<span class="reference-number">[5]</span><div>
+<p class="reference-author">Zindari et al. (2026). Under review.</p>
+<p class="reference-title">Theory of Adaptation and
+  Retention.</p></div></article>
+</div>
+<div class="reference-column"><h2>Background</h2>
+<article class="reference-entry" data-bib-key="ouyang2022instructions">
+<span class="reference-number">[6]</span><div>
+<p class="reference-author">Ouyang et al. (2022). NeurIPS.</p>
+<p class="reference-title"><a
+  href="https://proceedings.neurips.cc/paper/2022/hash/b1efde53be364a73914f58805a001731-Abstract-Conference.html">Training
+  Language Models to Follow Instructions with Human
+  Feedback.</a></p></div></article>
+<article class="reference-entry" data-bib-key="rafailov2023dpo">
+<span class="reference-number">[7]</span><div>
+<p class="reference-author">Rafailov et al. (2023). NeurIPS.</p>
+<p class="reference-title"><a
+  href="https://proceedings.neurips.cc/paper_files/paper/2023/hash/a85b405ed65c6477a4fe8302b5e06ce7-Abstract.html">Direct
+  Preference Optimization: Your Language Model is Secretly a Reward
+  Model.</a></p></div></article>
+<article class="reference-entry" data-bib-key="vaswani2017attention">
+<span class="reference-number">[8]</span><div>
+<p class="reference-author">Vaswani et al. (2017). NeurIPS.</p>
+<p class="reference-title"><a
+  href="https://proceedings.neurips.cc/paper_files/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html">Attention
+  Is All You Need.</a></p></div></article>
+<article class="reference-entry" data-bib-key="xiong2020layernorm">
+<span class="reference-number">[9]</span><div>
+<p class="reference-author">Xiong et al. (2020). ICML.</p>
+<p class="reference-title"><a
+  href="https://proceedings.mlr.press/v119/xiong20b.html">On Layer
+  Normalization in the Transformer Architecture.</a></p></div></article>
+<article class="reference-entry" data-bib-key="vu2022forgetting">
+<span class="reference-number">[10]</span><div>
+<p class="reference-author">Vu et al. (2022). EMNLP.</p>
+<p class="reference-title"><a
+  href="https://aclanthology.org/2022.emnlp-main.630/">Overcoming Catastrophic
+  Forgetting in Zero-Shot Cross-Lingual Generation.</a></p></div></article>
+</div>
+</div>
+<!-- BIBLIOGRAPHY:END -->
+</div><div class="slide__number">24 / 24</div>
+<aside class="speaker-notes">Bibliography for the three research papers, full fine-tuning and LoRA, and the training and transformer background. Entries are generated from slides/references.bib. The three research papers remain under review; the adaptation-and-retention manuscript has no public identifier and links to the supplied PDF. This page follows the spoken conclusion and is not allocated presentation time. Detailed dataset provenance remains in references.md and the appendix.</aside>
+</section>
+
+<section id="25" class="slide appendix-divider" data-backup data-title="Appendix">
+<h1>Appendix</h1>
+<aside class="speaker-notes">End of the timed talk. The following pages first explain transformer blocks and attention, then list the training and evaluation datasets for practical DISeL, then show two retention items, two MetaMathQA fine-tuning examples, and a clear definition of masked-LM perplexity. They are optional material for questions, outside the timed talk.</aside>
+</section>
+
+<section id="26" class="slide" data-title="A transformer updates token representations" data-backup>
+<h1 class="slide__title">A transformer updates token representations</h1><div class="slide__rule"></div>
+<div class="slide__content"><div class="intro-diagram transformer-overview" role="img" aria-label="Tokens become embeddings, pass through repeated transformer blocks and predict a next token. A pre-norm block contains attention and an MLP, each with a residual connection. The input X is in R^(T by d): T tokens and d embedding dimensions. Burgundy attention and MLP blocks contain weight matrices updated during full fine-tuning.">
+<svg viewBox="0 0 1144 500" aria-hidden="true">
+<defs><marker id="tr-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7Z" fill="#667079"/></marker></defs>
+<rect class="token-tile" x="0" y="97" width="94" height="52" rx="5"/><rect class="token-tile" x="102" y="97" width="42" height="52" rx="5"/><rect class="token-tile" x="152" y="97" width="112" height="52" rx="5"/><rect class="token-tile" x="272" y="97" width="38" height="52" rx="5"/>
+<rect class="diagram-base" x="350" y="78" width="135" height="98" rx="8"/>
+<rect class="block-shadow" x="579" y="66" width="225" height="114" rx="8"/><rect class="block-shadow" x="572" y="73" width="225" height="114" rx="8"/>
+<rect class="diagram-base" x="565" y="80" width="225" height="114" rx="8"/>
+<rect class="token-tile" x="879" y="83" width="235" height="106" rx="8"/>
+<g class="intro-wires" marker-end="url(#tr-arrow)"><path d="M312 124H347"/><path d="M487 127H562"/><path d="M806 127H876"/></g>
+<path class="zoom-guide" d="M582 197L133 262M773 197L1008 262"/>
+<rect class="zoom-frame" x="130" y="267" width="884" height="214" rx="9"/>
+<g class="intro-wires" marker-end="url(#tr-arrow)">
+<path d="M160 350H212"/><path d="M290 350H329"/><path d="M501 350H534"/><path d="M570 350H599"/><path d="M676 350H722"/><path d="M868 350H898"/><path d="M934 350H984"/>
+<path d="M187 350V294H552V331"/><path d="M582 350V418H916V369"/>
+</g>
+<rect class="norm-block" x="215" y="318" width="75" height="64" rx="5"/>
+<rect class="transformer-weight-block" x="330" y="310" width="171" height="80" rx="7"/>
+<circle class="diagram-sum" cx="552" cy="350" r="18"/>
+<rect class="norm-block" x="600" y="318" width="76" height="64" rx="5"/>
+<rect class="transformer-weight-block" x="723" y="310" width="145" height="80" rx="7"/>
+<circle class="diagram-sum" cx="916" cy="350" r="18"/>
+</svg><span class="diagram-label" style="left:13.54895%;top:12.80000%;font-size:24px;">\(T\) tokens</span><span class="diagram-label" style="left:4.10839%;top:24.40000%;font-size:23px;">Capital</span><span class="diagram-label" style="left:10.75175%;top:24.40000%;font-size:23px;">of</span><span class="diagram-label" style="left:18.18182%;top:24.40000%;font-size:23px;">Germany</span><span class="diagram-label" style="left:25.43706%;top:24.40000%;font-size:23px;">is</span><span class="diagram-label" style="left:36.49476%;top:9.40000%;font-size:23px;">\(\mathbf{X}\in\mathbb{R}^{T\times d}\)</span><span class="diagram-label" style="left:36.49476%;top:25.20000%;font-size:38px;">\(\mathbf{X}\)</span><span class="diagram-label" style="left:36.49476%;top:39.00000%;font-size:20px;">\(d\)-dimensional embeddings</span><span class="diagram-label" style="left:59.22203%;top:27.40000%;font-size:29px;">Transformer<br>block</span><span class="diagram-label" style="left:59.22203%;top:9.40000%;font-size:21px;">\(\times L\) blocks</span><span class="diagram-label" style="left:87.10664%;top:22.00000%;font-size:22px;">Next token</span><span class="diagram-label" style="left:87.10664%;top:30.40000%;font-size:38px;">Berlin</span><span class="diagram-label " style="left:22.02797%;top:70.00000%;font-size:20px;">Norm</span><span class="diagram-label " style="left:36.27622%;top:70.00000%;font-size:28px;color:#FFF;">Attention</span><span class="diagram-label " style="left:48.25175%;top:70.00000%;font-size:26px;">\(+\)</span><span class="diagram-label " style="left:55.76923%;top:70.00000%;font-size:20px;">Norm</span><span class="diagram-label " style="left:69.49301%;top:70.00000%;font-size:29px;color:#FFF;">MLP</span><span class="diagram-label " style="left:80.06993%;top:70.00000%;font-size:26px;">\(+\)</span><span class="diagram-label " style="left:36.27622%;top:90.20000%;font-size:23px;">Mix tokens</span><span class="diagram-label " style="left:69.49301%;top:90.20000%;font-size:23px;">Transform features</span></div>
+<div class="transformer-legend"><span class="transformer-weight-swatch" aria-hidden="true"></span><span>Colored blocks contain weight matrices updated during full fine-tuning.</span></div>
+</div>
+<div class="slide__number">A1</div>
+<aside class="speaker-notes">Use “Capital of Germany is” followed by “Berlin” as an illustrative next-token completion, not a measured model prediction. Word-sized tiles illustrate a token sequence; exact subword tokenization depends on the tokenizer. Tokens are mapped to vectors; position information is also included but omitted from this drawing. Repeated transformer blocks update these vectors. Attention exchanges information between tokens; the MLP transforms each token's features. The zoom shows a decoder-style pre-norm block, with normalization before each sublayer and two residual additions. This is not a reproduction of the original 2017 post-norm encoder-decoder architecture. The final normalization and language-model head are omitted from the overview. X belongs to R^(T by d), with T tokens and embedding dimension d: one row per token and one column per embedding feature. For one block, its input and output have the same sequence shape. Burgundy highlights the attention and MLP modules, which contain trainable weight matrices; the blocks are not themselves single matrices. These matrices are updated during full fine-tuning. Full fine-tuning also trains other model parameters, including embeddings and normalization parameters; the highlights focus on the matrix-bearing sublayers adapted by the methods in this talk. X is an activation matrix, not a trainable weight matrix. Sources: <a href="https://arxiv.org/html/1706.03762v7#S3">Vaswani et al., Attention Is All You Need, §3</a>; <a href="https://arxiv.org/abs/2002.04745">Xiong et al., On Layer Normalization in the Transformer Architecture</a>.</aside>
+</section>
+
+<section id="27" class="slide" data-title="Inside attention: four learned projections" data-backup>
+<h1 class="slide__title">Inside attention: four learned projections</h1><div class="slide__rule"></div>
+<div class="slide__content"><div class="intro-diagram attention-overview" role="img" aria-label="Each token is projected through query, key and value matrices. Queries and keys produce causal attention weights; these weights mix the values, followed by an output projection. One head is shown inside a dashed attention-block boundary. X is the external input and Y the external output; their arrows cross the boundary.">
+<svg viewBox="0 0 1144 543" aria-hidden="true">
+<defs><marker id="at-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7Z" fill="#667079"/></marker></defs>
+<rect class="attention-block-boundary" x="113" y="12" width="967" height="404" rx="9"/>
+<g class="intro-wires" marker-end="url(#at-arrow)">
+<path d="M89 225H137V90H209"/><path d="M137 225H209"/><path d="M137 225V351H209"/>
+<path d="M340 90H404"/><path d="M340 225H404"/><path d="M340 351H404"/>
+<path d="M447 90H494V158H564"/><path d="M447 225H494V158" marker-end="none"/>
+<path d="M738 158H794"/><path d="M447 351H823V189"/><path d="M852 158H913"/><path d="M1047 158H1107"/>
+</g>
+<rect class="diagram-factor" x="210" y="58" width="130" height="64" rx="7"/>
+<rect class="diagram-factor" x="210" y="193" width="130" height="64" rx="7"/>
+<rect class="diagram-factor" x="210" y="319" width="130" height="64" rx="7"/>
+<rect class="attention-frame" x="566" y="73" width="172" height="178" rx="8"/>
+<rect x="594" y="106" width="35" height="35" rx="2" fill="#842B40"/><rect class="masked-cell" x="633" y="106" width="35" height="35" rx="2"/><rect class="masked-cell" x="672" y="106" width="35" height="35" rx="2"/>
+<rect x="594" y="145" width="35" height="35" rx="2" fill="#D8B0BA"/><rect x="633" y="145" width="35" height="35" rx="2" fill="#A7586B"/><rect class="masked-cell" x="672" y="145" width="35" height="35" rx="2"/>
+<rect x="594" y="184" width="35" height="35" rx="2" fill="#E8D0D7"/><rect x="633" y="184" width="35" height="35" rx="2" fill="#D8B0BA"/><rect x="672" y="184" width="35" height="35" rx="2" fill="#BF7D8E"/>
+<circle class="diagram-sum" cx="823" cy="158" r="28"/>
+<rect class="diagram-factor" x="915" y="122" width="132" height="72" rx="7"/>
+</svg><span class="attention-block-label">Attention block</span><span class="diagram-label " style="left:5.24476%;top:225px;font-size:36px;">\(\mathbf{X}\)</span><span class="diagram-label " style="left:5.41958%;top:266px;font-size:20px;">Tokens</span><span class="diagram-label " style="left:24.03846%;top:90px;font-size:32px;">\(\mathbf{W}_Q\)</span><span class="diagram-label " style="left:24.03846%;top:225px;font-size:32px;">\(\mathbf{W}_K\)</span><span class="diagram-label " style="left:24.03846%;top:351px;font-size:32px;">\(\mathbf{W}_V\)</span><span class="diagram-label " style="left:37.41259%;top:89px;font-size:31px;">\(\mathbf{Q}\)</span><span class="diagram-label " style="left:37.41259%;top:127px;font-size:19px;">Queries</span><span class="diagram-label " style="left:37.41259%;top:225px;font-size:31px;">\(\mathbf{K}\)</span><span class="diagram-label " style="left:37.41259%;top:263px;font-size:19px;">Keys</span><span class="diagram-label " style="left:37.41259%;top:351px;font-size:31px;">\(\mathbf{V}\)</span><span class="diagram-label " style="left:37.41259%;top:391px;font-size:19px;">Values</span><span class="diagram-label " style="left:56.99301%;top:40px;font-size:32px;">\(\mathbf{S}\)</span><span class="diagram-label " style="left:56.99301%;top:279px;font-size:22px;">Attention weights</span><span class="diagram-label " style="left:71.94056%;top:158px;font-size:30px;">\(\times\)</span><span class="diagram-label " style="left:76.92308%;top:119px;font-size:24px;">\(\mathbf{Z}\)</span><span class="diagram-label " style="left:85.75175%;top:158px;font-size:32px;">\(\mathbf{W}_O\)</span><span class="diagram-label " style="left:98.95105%;top:158px;font-size:30px;">\(\mathbf{Y}\)</span><div class="attention-equation">\(\displaystyle \mathbf{S}=\operatorname{softmax}_{\mathrm{row}}\!\left(\frac{\mathbf{Q}\mathbf{K}^{\top}}{\sqrt{d_k}}+\mathbf{M}\right),\qquad\mathbf{Z}=\mathbf{S}\mathbf{V}\)</div>
+<div class="attention-caption">One attention head · \(\mathbf{M}\) masks future tokens</div></div></div>
+<div class="slide__number">A2</div>
+<aside class="speaker-notes">The dashed boundary encloses the attention computation. X is the external input and Y is the external output, with their arrows crossing the boundary. The input matrix X stacks the token vectors as rows. Use the column-vector convention of the DISeL paper for each token: q_i = W_Q x_i, k_i = W_K x_i and v_i = W_V x_i. Thus Q = X W_Q transpose, K = X W_K transpose and V = X W_V transpose. Q asks what information a token needs; K supports comparison between tokens; V carries the information to mix. S is a row-normalized attention matrix. The illustrated lower-triangular pattern is conceptual, not measured attention. The causal mask M is zero on allowed positions and negative infinity on future positions. Z = S V, and Y = Z W_O transpose in this one-head drawing. Multi-head attention repeats this mechanism, concatenates head outputs, then applies an output projection. The colored W matrices are learned weights; the attention weights S are computed from the input. LoRA and DISeL modify selected learned projection matrices, not S directly. The experiments also adapt MLP projections. Source: <a href="https://arxiv.org/html/1706.03762v7#S3.S2">Attention Is All You Need, §3.2</a>.</aside>
+</section>
+
+<section id="28" class="slide dataset-catalog" data-backup data-title="DISeL: fine-tuning and task evaluation data">
+<h1 class="slide__title">DISeL: fine-tuning and task evaluation data</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="dataset-catalog-intro">Two instruction-tuning settings</p>
+<table class="dataset-map"><thead><tr><th>Setting</th><th>Fine-tuning data</th><th>Target-task evaluation</th></tr></thead><tbody>
+<tr><td><strong>Math</strong><span>Llama 2-7B</span></td><td><strong>MetaMathQA</strong><span>Math questions and worked answers</span></td><td><strong>GSM8K</strong><span>Grade School Math · 5-shot exact match</span></td></tr>
+<tr><td><strong>Code</strong><span>Mistral-7B</span></td><td><strong>Magicoder-Evol-Instruct-110K</strong><span>Code instructions and solutions</span></td><td><strong>HumanEval</strong><span>Python programming problems · pass@1</span></td></tr>
+</tbody></table>
+<div class="catalog-gates"><strong>Gate analysis:</strong> GSM8K (math), HumanEval (code), and WikiText-2 (general text).</div>
+<p class="catalog-footnote">Fine-tuning corpora: 95% training, 5% validation. The next slide lists all 14 retention benchmarks.</p>
+</div><div class="slide__number">A3</div>
+<aside class="speaker-notes">Complete LLM fine-tuning and target-task dataset names from DISeL Appendix V.1 and V.6. MetaMathQA is the source corpus, not a dataset called Alpaca: Alpaca is the prompt template used here. Magicoder-Evol-Instruct-110K is the specific Magicoder corpus. Both corpora use a random 5% validation split, seed 42, with training on the remaining 95% and response-token loss. GSM8K is the Grade School Math benchmark, evaluated five-shot with strict exact match. HumanEval uses 164 Python problems and greedy pass@1 with one completion per problem. Gate diagnostics in §5 and Appendix VII reuse GSM8K, HumanEval and WikiText-2; these are not additional training corpora. Sources: DISeL pp. 7, 22–26, 28–30; https://huggingface.co/datasets/meta-math/MetaMathQA ; https://huggingface.co/datasets/ise-uiuc/Magicoder-Evol-Instruct-110K ; https://github.com/openai/grade-school-math ; https://github.com/openai/human-eval .</aside>
+</section>
+
+<section id="29" class="slide dataset-catalog" data-backup data-title="DISeL: all 14 LLM retention benchmarks">
+<h1 class="slide__title">DISeL: all 14 LLM retention benchmarks</h1><div class="slide__rule"></div>
+<div class="slide__content"><p class="dataset-catalog-intro">The same suite for Llama and Mistral · 5-shot · mean accuracy</p>
+<div class="dataset-catalog-grid retention-catalog"><div><div class="dataset-entry"><h3>HellaSwag</h3><p>Commonsense sentence completion</p></div>
+<div class="dataset-entry"><h3>WinoGrande</h3><p>Winograd-style commonsense reasoning</p></div>
+<div class="dataset-entry"><h3>ARC-Challenge</h3><p>AI2 Reasoning Challenge · Challenge set</p></div>
+<div class="dataset-entry"><h3>ARC-Easy</h3><p>AI2 Reasoning Challenge · Easy set</p></div>
+<div class="dataset-entry"><h3>LAMBADA — OpenAI version</h3><p>Word prediction from a broad context</p></div>
+<div class="dataset-entry"><h3>BoolQ</h3><p>Natural yes/no questions</p></div>
+<div class="dataset-entry"><h3>PIQA</h3><p>Physical Interaction: Question Answering</p></div></div><div><div class="dataset-entry"><h3>TriviaQA</h3><p>Trivia question answering</p></div>
+<div class="dataset-entry"><h3>OpenBookQA</h3><p>Open-book science question answering</p></div>
+<div class="dataset-entry"><h3>SciQ</h3><p>Science question answering</p></div>
+<div class="dataset-entry"><h3>MMLU</h3><p>Massive Multitask Language Understanding · 57 tasks</p></div>
+<div class="dataset-entry"><h3>MedQA — 4 options</h3><p>Medical question answering</p></div>
+<div class="dataset-entry"><h3>CommonsenseQA</h3><p>Commonsense question answering</p></div>
+<div class="dataset-entry"><h3>Natural Questions — Open</h3><p>Open-domain question answering</p></div></div></div>
+</div><div class="slide__number">A4</div>
+<aside class="speaker-notes">This is the complete 14-benchmark retention suite in DISeL Appendix V.6, Table 13, in the table's order. Both math and code runs use the same suite and report its unweighted mean accuracy. Metrics are normalized accuracy for HellaSwag, ARC-Challenge, ARC-Easy, PIQA and OpenBookQA; ordinary accuracy for the other entries, with perplexity also recorded for LAMBADA. MMLU is a 57-task aggregate counted as one benchmark in the 14-benchmark mean. Dataset names and variants are written out; descriptions explain names that are proper names rather than formal acronyms. This suite measures retention; it is not replayed during fine-tuning. Full benchmark names and source links are in slides/references.md. Source: DISeL p. 26, Table 13.</aside>
+</section>
+
+<section id="30" class="slide dataset-catalog" data-backup data-title="DISeL: RoBERTa fine-tuning and retention data">
+<h1 class="slide__title">DISeL: RoBERTa fine-tuning and retention data</h1><div class="slide__rule"></div>
+<div class="slide__content"><p class="dataset-catalog-intro">GLUE: General Language Understanding Evaluation</p>
+<div class="dataset-catalog-grid roberta-catalog"><div><h2>Fine-tuning and task evaluation</h2><div class="dataset-entry"><h3>MNLI · Multi-Genre Natural Language Inference</h3><p>MultiNLI · matched validation</p></div>
+<div class="dataset-entry"><h3>SST-2 · Stanford Sentiment Treebank</h3><p>Binary sentiment classification</p></div>
+<div class="dataset-entry"><h3>QNLI · Question-answering Natural Language Inference</h3><p>Derived from the Stanford Question Answering Dataset</p></div>
+<div class="dataset-entry"><h3>CoLA · Corpus of Linguistic Acceptability</h3><p>Grammatical acceptability</p></div>
+<div class="dataset-entry"><h3>MRPC · Microsoft Research Paraphrase Corpus</h3><p>Sentence-pair paraphrase classification</p></div></div><div><h2>Retention evaluation</h2><div class="dataset-entry"><h3>BookCorpusOpen</h3><p>Open book-text corpus</p></div>
+<div class="dataset-entry"><h3>CC-News · Common Crawl News</h3><p>English news articles</p></div>
+<div class="dataset-entry"><h3>WikiText-2</h3><p>Wikipedia text · raw version</p></div><p class="catalog-footnote">Mean masked-language-model perplexity on the three corpora.</p></div></div>
+</div><div class="slide__number">A5</div>
+<aside class="speaker-notes">Complete RoBERTa dataset list from DISeL Appendix IV, Table 4 and §IV.5. The five GLUE tasks are separate fine-tuning runs, with their validation accuracies averaged. MNLI uses matched validation; CoLA uses accuracy in this paper rather than its usual Matthews correlation. QNLI is the GLUE question-answering-to-natural-language-inference task derived from SQuAD (Stanford Question Answering Dataset); SQuAD is its source, not an additional standalone experiment here. Retention uses wikitext/wikitext-2-raw-v1 validation, bookcorpusopen, and cc_news. BookCorpusOpen and CC-News each use 10,000 sampled sentences. The original masked-LM head is restored for perplexity evaluation. Source: DISeL pp. 20–22; https://gluebenchmark.com/tasks/ .</aside>
+</section>
+
+<section id="31" class="slide dataset-slide" data-backup data-title="Examples from retention datasets">
+<h1 class="slide__title">Examples from retention datasets</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<div class="retention-examples">
+ <article><h2>ARC-Easy</h2><p class="dataset-purpose">Science knowledge</p><p class="dataset-question">Which process best explains how the Grand Canyon became so wide?</p><div class="dataset-options"><div><span>A</span> folding</div><div><span>B</span> erosion</div><div><span>C</span> deposition</div><div><span>D</span> sedimentation</div></div><p class="dataset-answer">Correct answer: <strong>B · erosion</strong></p></article>
+ <article><h2>WinoGrande</h2><p class="dataset-purpose">Sentence understanding</p><p class="dataset-question">Sarah was a much better surgeon than Maria so <span class="dataset-blank">____</span> always got the easier cases.</p><div class="dataset-options"><div><span>1</span> Sarah</div><div><span>2</span> Maria</div></div><p class="dataset-answer">Correct answer: <strong>2 · Maria</strong></p></article>
+</div>
+</div><div class="slide__number">A6</div>
+<aside class="speaker-notes">These are actual source-dataset records from two of the retention benchmarks listed in DISeL Table 13, not invented examples or model outputs. ARC-Easy: test split, zero-based row 15, ID Mercury_SC_401777, answer B. WinoGrande: winogrande_xl validation split, zero-based row 0, answer 2. WinoGrande's single underscore is expanded visually to a blank. Option wording and labels are preserved. Show how a model must retain science knowledge and resolve the sentence, even though fine-tuning examples are from another task. The slide omits the paper's five-shot context and lm-eval wrapper; it shows the core item only. Dataset snapshots and complete source fields are recorded in slides/data/appendix-examples.json. Sources: https://huggingface.co/datasets/allenai/ai2_arc ; https://huggingface.co/datasets/allenai/winogrande ; DISeL Appendix V.6, Table 13.</aside>
+</section>
+
+<section id="32" class="slide dataset-slide math-data-slide" data-backup data-title="Math fine-tuning data: a word problem">
+<h1 class="slide__title">Math fine-tuning data: a word problem</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="dataset-intro">MetaMathQA · instruction and worked response</p>
+<div class="sample-section"><h2>Instruction</h2><p>Dave bought 8 books about animals, 6 books about outer space, and 3 books about trains to keep him busy over the holidays. Each book cost \(\$6\). How much did Dave spend on the books?</p></div>
+<div class="sample-section sample-response"><h2>Response</h2><p>Dave bought a total of \(8+6+3=17\) books.</p><p>Each book cost \(\$6\), so Dave spent a total of \(17\times\$6=\$102\) on the books.</p><div class="sample-answer">The answer is: \(102\)</div></div>
+</div><div class="slide__number">A7</div>
+<aside class="speaker-notes">Actual MetaMathQA public train-split record at zero-based row 9, type GSM_AnsAug. The query becomes the instruction and the response is the supervised target. The displayed wording is from the dataset, with arithmetic typeset in LaTeX; the redundant “#### 102” delimiter is omitted before the existing final-answer sentence. This is an example from the source corpus, not a claim that the particular record was in the paper's 95% training partition rather than the held-out 5%. DISeL Appendix V.1 specifies MetaMathQA, an Alpaca instruction/response template, and a loss computed on response tokens only. GSM8K is the separate target-task evaluation benchmark, not the fine-tuning corpus shown here. Source record and revision: slides/data/appendix-examples.json. Source: https://huggingface.co/datasets/meta-math/MetaMathQA .</aside>
+</section>
+
+<section id="33" class="slide dataset-slide math-data-slide" data-backup data-title="Math fine-tuning data: a number-base problem">
+<h1 class="slide__title">Math fine-tuning data: a number-base problem</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="dataset-intro">MetaMathQA · instruction and worked response</p>
+<div class="sample-section"><h2>Instruction</h2><p>Convert \(10101_3\) to a base 10 integer.</p></div>
+<div class="sample-section sample-response"><h2>Response</h2><div class="sample-math">\(\begin{aligned}10101_3&amp;=1\cdot3^4+0\cdot3^3+1\cdot3^2+0\cdot3^1+1\cdot3^0\\&amp;=81+9+1=\boxed{91}.\end{aligned}\)</div><div class="sample-answer">The answer is: \(91\)</div></div>
+</div><div class="slide__number">A8</div>
+<aside class="speaker-notes">Actual MetaMathQA public train-split record at zero-based row 3, type MATH_AnsAug. The query and response are reproduced with LaTeX formatting and a line break added to the equality chain; the math and answer are unchanged. This illustrates the corpus's mathematical notation and worked-solution supervision alongside the preceding word problem. The shown record's membership in the paper's random 95% training partition is not established. Source record and revision: slides/data/appendix-examples.json. Sources: https://huggingface.co/datasets/meta-math/MetaMathQA ; DISeL Appendix V.1.</aside>
+</section>
+
+<section id="34" class="slide perplexity-slide" data-backup data-title="Perplexity: scoring a test set">
+<h1 class="slide__title">Perplexity: scoring a test set</h1><div class="slide__rule"></div>
+<div class="slide__content">
+<p class="perplexity-intro">RoBERTa: score the masked tokens. Lower perplexity means better predictions.</p>
+<div class="perplexity-grid">
+<article class="perplexity-examples"><h2>Illustration: two test samples</h2>
+<div class="perplexity-sample"><div class="perplexity-sample-label">Sample 1 · two masked tokens</div><p class="perplexity-sentence">The <span class="perplexity-mask">&lt;mask&gt;</span> is <span class="perplexity-mask">&lt;mask&gt;</span>.</p><p class="perplexity-probabilities">sky: \(p_1=0.5\) <span>·</span> blue: \(p_2=0.25\)</p></div>
+<div class="perplexity-sample"><div class="perplexity-sample-label">Sample 2 · one masked token</div><p class="perplexity-sentence">Birds can <span class="perplexity-mask">&lt;mask&gt;</span>.</p><p class="perplexity-probabilities">fly: \(p_3=0.125\)</p></div>
+</article>
+<article class="perplexity-definition">
+<div class="perplexity-formula">\(\displaystyle \operatorname{PPL}=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right)\)</div>
+<dl class="perplexity-terms"><dt>\(p_i\)</dt><dd>Probability of the correct token,<br>given the visible text.</dd><dt>\(N\)</dt><dd>Total scored tokens<br>across all test samples.</dd></dl>
+<p class="perplexity-count">Here: \(N=2+1=3\), from two samples.</p>
+</article>
+</div>
+<div class="perplexity-calculation"><p>Sum the token losses \(\;\to\;\) divide by \(N\) \(\;\to\;\) exponentiate</p><div>\(\displaystyle \operatorname{PPL}=\exp\!\left(\frac{-\log 0.5-\log 0.25-\log 0.125}{3}\right)=4\)</div></div>
+</div><div class="slide__number">A9</div>
+<aside class="speaker-notes">Explain the count before the formula. Each masked position is one prediction question, so the first sample supplies two scored tokens and the second supplies one. N is three, not two samples, the vocabulary size, or all visible tokens. Flatten the evaluated positions across all samples into indices i=1,...,N. For each position p_i is the model probability assigned to the original correct token, conditioned on the corrupted input. The words and probabilities shown are invented for this illustration; assume each answer is one token. They are not measured model outputs or source-dataset records. Using natural logarithms, add -log(0.5), -log(0.25), and -log(0.125), divide by three, then exponentiate: the result is four. For a larger test set, sum token losses and counts across batches, excluding padding and unscored positions, then exponentiate the total loss divided by N. This is token-weighted aggregation, not an average of sample perplexities. Higher probabilities for the correct tokens produce lower loss and lower perplexity. Here masked-LM perplexity means exponentiated masked-token cross-entropy under a specified masking protocol; it is not the autoregressive likelihood of a whole sentence. The selected MLM target positions are the scored positions even if a masking implementation occasionally leaves one unchanged or replaces it randomly. Use the same tokenization and masking protocol when comparing models. DISeL Appendix IV.5 restores the original RoBERTa MLM head and evaluates three retention corpora. Figure 1 then averages the three corpus perplexities, a separate aggregation from pooling token losses within a corpus. The manuscript does not specify every batching and masking implementation detail, so this slide explains the token-level definition rather than claiming a code audit. Sources: papers/disel.pdf, §4.1, Figure 1, and Appendix IV.5; https://huggingface.co/docs/transformers/en/tasks/masked_language_modeling ; https://huggingface.co/docs/transformers/en/perplexity .</aside>
+</section>
+
+<section id="35" class="slide tuning-slide" data-title="LoRA adds a low-rank path to the projection" data-backup>
+  <h1 class="slide__title">LoRA adds a low-rank path to the projection</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <div class="tuning-equation">\(\mathbf{y}=\bigl({\color{#34404A}\mathbf{W}_0}+{\color{#842B40}\mathbf{A}\mathbf{B}}\bigr)\mathbf{x}={\color{#34404A}\mathbf{W}_0\mathbf{x}}+{\color{#842B40}\mathbf{A}\mathbf{B}}\mathbf{x}\)</div>
+<div class="method-diagram lora-diagram" role="img" aria-label="The input x is centered between the two branches, with equal vertical splits upward to W zero and downward to B. LoRA applies B then A to the input. Both add the update to the frozen base output. The frozen block is centered on the upper lane. The vertical segments entering the sum have equal lengths.">
+<svg viewBox="0 0 1144 355" aria-hidden="true">
+<defs><marker id="la" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#667079"/></marker></defs>
+<g class="diagram-wires" marker-end="url(#la)"><path d="M94 125H174" marker-end="none"/><path d="M174 125V51H495"/><path d="M174 125V199H282"/><path d="M670 51H991V101"/><path d="M927 199H991V149"/><path d="M1015 125H1080"/><path d="M452 199H752"/></g>
+<rect class="diagram-base" x="495" y="13" width="175" height="76" rx="9"/>
+<rect class="diagram-trainable" x="282" y="156" width="170" height="86" rx="9"/>
+<rect class="diagram-trainable" x="752" y="156" width="175" height="86" rx="9"/>
+<circle class="diagram-sum" cx="991" cy="125" r="24"/>
+</svg>
+<span class="diagram-label " style="left:4.98252%;top:35.21127%;font-size:31px;">\(\mathbf{x}\)</span>
+<span class="diagram-label " style="left:50.91783%;top:9.85915%;font-size:31px;">\(\mathbf{W}_0\)</span>
+<span class="diagram-label " style="left:50.91783%;top:19.43662%;font-size:21px;color:var(--muted);">Frozen</span>
+<span class="diagram-label " style="left:32.08042%;top:51.83099%;font-size:31px;color:var(--accent);">\(\mathbf{B}\)</span>
+<span class="diagram-label " style="left:32.08042%;top:62.25352%;font-size:21px;">Train · \(r\times d_x\)</span>
+<span class="diagram-label " style="left:73.38287%;top:51.83099%;font-size:31px;color:var(--accent);">\(\mathbf{A}\)</span>
+<span class="diagram-label " style="left:73.38287%;top:62.25352%;font-size:21px;">Train · \(d_y\times r\)</span>
+<span class="diagram-label " style="left:86.62587%;top:35.21127%;font-size:28px;">\(+\)</span>
+<span class="diagram-label " style="left:96.50350%;top:35.21127%;font-size:31px;">\(\mathbf{y}\)</span>
+<span class="diagram-label " style="left:50.00000%;top:87.04225%;font-size:23px;">Gradients and optimizer states only for \(\mathbf{A}\) and \(\mathbf{B}\).</span>
+</div>
+        <div class="parameter-summary">
+ <div><span>Trainable parameters</span><div>\(r(d_x+d_y)\), with \(r\ll d_x,d_y\)</div></div>
+ <div><span>\(r=16\)</span><div>\(131{,}072\) <span class="parameter-saving">\(128\times\) fewer</span></div></div>
+</div>
+  </div>
+  <div class="slide__number">A10</div>
+  <aside class="speaker-notes">This static appendix slide shows y = (W_0 + A B)x = W_0 x + A B x. The factored form connects to the weight-matrix view on main slide 9; the expanded form shows the two paths. Trace one input through the computation. The centered input splits upward to W_0 and downward to B, then A. W_0 is frozen. In the trainable branch, B maps x to r coordinates and A maps it back to d_y outputs. Matrix multiplication acts right to left: A B x means B first, then A. Add this branch to W_0 x. Only A and B need parameter gradients and optimizer states; frozen weights and activations still consume memory. The main LoRA matrix slide gives the same parameter count. The conventional alpha-over-r scale is omitted. Main slide 10 explains why full fine-tuning and LoRA can forget. The next appendix slide adds the DISeL gate branch. Sources: DISeL §§2–3; LoRA vs. Full Fine-Tuning §2.2.</aside>
+</section>
+
+<section id="36" class="slide disel-count-slide" data-title="The input controls the gates" data-backup>
+  <h1 class="slide__title">The input controls the gates</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <div class="tuning-equation">\(\mathbf{y}=\bigl(\mathbf{W}_0+\mathbf{A}{\color{#842B40}\mathbf{G}(\mathbf{x})}\mathbf{B}\bigr)\mathbf{x}=\mathbf{W}_0\mathbf{x}+\mathbf{A}{\color{#842B40}\mathbf{G}(\mathbf{x})}\mathbf{B}\mathbf{x}\)</div>
+<div class="method-diagram disel-diagram" role="img" aria-label="DISeL computes a sigmoid gate from the input, scales each rank feature, then projects back through A. Both add the update to the frozen base output. The B, scaling and A row lies halfway between the frozen path and the gate-computation path. The frozen block, multiplication circle and gate box share the same horizontal center. The vertical segments entering the sum have equal lengths. The gate box is centered directly below the elementwise multiplication circle.">
+<svg viewBox="0 0 1144 355" aria-hidden="true">
+<defs><marker id="da" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#667079"/></marker></defs>
+<g class="diagram-wires" marker-end="url(#da)"><path d="M94 177H174" marker-end="none"/><path d="M174 177H282"/><path d="M174 177V51H513.5"/><path d="M688.5 51H991V90"/><path d="M927 177H991V138"/><path d="M1015 114H1080"/><path d="M174 177V303H386.5"/><path d="M452 177H572"/><path d="M601 270V206"/><path d="M630 177H752"/></g>
+<rect class="diagram-base" x="513.5" y="13" width="175" height="76" rx="9"/>
+<rect class="diagram-trainable" x="282" y="134" width="170" height="86" rx="9"/>
+<rect class="diagram-trainable" x="752" y="134" width="175" height="86" rx="9"/>
+<circle class="diagram-sum" cx="991" cy="114" r="24"/>
+<rect class="diagram-gate" x="386.5" y="270" width="429" height="66" rx="9"/><circle class="diagram-gate" cx="601" cy="177" r="29"/></svg>
+<span class="diagram-label " style="left:4.98252%;top:49.85915%;font-size:31px;">\(\mathbf{x}\)</span>
+<span class="diagram-label " style="left:52.53497%;top:9.85915%;font-size:31px;">\(\mathbf{W}_0\)</span>
+<span class="diagram-label " style="left:52.53497%;top:19.43662%;font-size:21px;color:var(--muted);">Frozen</span>
+<span class="diagram-label " style="left:32.08042%;top:45.63380%;font-size:31px;color:var(--accent);">\(\mathbf{B}\)</span>
+<span class="diagram-label " style="left:32.08042%;top:56.05634%;font-size:21px;">Train · \(r\times d_x\)</span>
+<span class="diagram-label " style="left:73.38287%;top:45.63380%;font-size:31px;color:var(--accent);">\(\mathbf{A}\)</span>
+<span class="diagram-label " style="left:73.38287%;top:56.05634%;font-size:21px;">Train · \(d_y\times r\)</span>
+<span class="diagram-label " style="left:86.62587%;top:32.11268%;font-size:28px;">\(+\)</span>
+<span class="diagram-label " style="left:96.50350%;top:32.11268%;font-size:31px;">\(\mathbf{y}\)</span>
+<span class="diagram-label " style="left:52.53497%;top:85.35211%;font-size:27px;">\(\mathbf{g}(\mathbf{x})=\sigma(\mathbf{W}_g\mathbf{x}+\mathbf{b})\)</span>
+<span class="diagram-label " style="left:52.53497%;top:49.85915%;font-size:28px;">\(\odot\)</span>
+<span class="diagram-label " style="left:52.53497%;top:35.21127%;font-size:21px;color:var(--muted);">Scale each part</span>
+</div>
+        <div class="disel-training-summary">
+<p>We train the update and gates together on new-task data.</p>
+<div class="disel-training-count"><span>Trainable: \(r(d_y+2d_x+1)\)</span><span>\(d_x=d_y=4096,\ r=16:\quad196{,}624\) <span class="accent-text">\((\approx1.5\times\text{ LoRA})\)</span></span></div>
+</div>
+  </div>
+  <div class="slide__number">A11</div>
+  <aside class="speaker-notes">Trace one input through the figure, starting with the familiar frozen base path. The lower LoRA path produces the learned correction. The extra branch reads the same input and computes the gate values. At the circle, multiply each feature of Bx by its gate, then apply A and add the result to the base output. The equation writes this as y = (W_0 + A G(x) B)x = W_0 x + A G(x) B x, where G(x) is the diagonal gate matrix defined on main slide 14. This explains what the diagonal matrix does to an actual input. The gates are continuous controls, not a hard choice between tasks, and they need not sum to one. Each adapted layer and token gets its own values. Emphasize the sentence below the diagram: we train A, B, W_g and b together using only new-task data. The new-task learning signal adjusts both the correction and how strongly it is applied. There is no supplied task identity or label saying which old inputs should be preserved, and no replay of pre-training data. This is a design for learning selective corrections, not a guarantee that all earlier abilities remain unchanged. Mention the compact parameter count only briefly: the gate adds r d_x + r weights and biases; the whole adapter has r(d_y + 2d_x + 1) trainable parameters. For d_x=d_y=4096 and r=16 this is 196,624, about 1.5 times LoRA's 131,072, excluding the frozen base. This is a per-projection parameter ratio, not a total-memory or speed ratio. The B, scaling and A row is equally spaced between the frozen path and gate-computation path. The output sum is halfway between the two paths being added. W_0, the multiplication circle and the gate box share a vertical centerline. Main slide 15 explains how initialization starts from the pre-trained behavior and favors small gates. Sources: DISeL, §3, Eq. (7), and Appendix V.4.</aside>
+</section>
+
+<section id="37" class="slide" data-title="Strong task accuracy can hide severe forgetting" data-backup>
+  <h1 class="slide__title">Strong task accuracy can hide severe forgetting</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <img class="plot plot-wide" style="height:387px" src="assets/roberta_tradeoff.svg" alt="GLUE accuracy versus masked-LM perplexity on a log scale. DISeL and AdaLoRA stay close to base perplexity while other methods may have much higher perplexity despite similar task accuracy.">
+    <p class="small center" style="margin-top:8px">Here, <strong>upper left</strong> is better. Points average three seeds; bars show standard deviations.</p>
+    <div class="takeaway"><span class="callout-label">Comparison across scales</span>DISeL and AdaLoRA are similar here, but DISeL’s advantage appears at the larger 7B scale.</div>
+  </div>
+  <div class="slide__number">A12</div>
+  <aside class="speaker-notes">Explicitly announce that the horizontal direction changes: lower perplexity is better. The five GLUE tasks are trained separately, then averaged. Models with similar new-task accuracy can differ greatly on language modeling. Acknowledge AdaLoRA's strong result rather than claiming DISeL uniquely solves this setting. The stronger combined task-retention result at the larger scale is why the main talk’s Llama and Mistral figures are central. The comparison changes architecture and task as well as size, so it does not isolate model scale. These are the paper's reported checkpoints and hyperparameter settings. Sources: DISeL, Fig. 1 · Baseline perplexity \(\approx6.4\); horizontal axis is logarithmic.</aside>
+</section>
+<section id="38" class="slide gate-attention-slide" data-title="Gate activation across attention matrices" data-backup>
+  <h1 class="slide__title">Gate activation across attention matrices</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <p class="small"><strong>Llama 2-7B · Rank-32 math adapter · Held-out GSM8K</strong></p>
+    <img class="plot gate-attention-figure" src="assets/gate_attention_projections.svg" alt="Original attention panels from DISeL Figure 10: gate-value histograms for query, key, value, and output projections. Each panel compares early, middle, and late layers. Query and key projections have higher mean gate activation than value projections in every depth band.">
+    <p class="gate-attention-caption">Query and key gates are more open on average than value gates.</p>
+  </div>
+  <div class="slide__number">A13</div>
+  <p class="slide-citation"><span class="citation-index">[3]</span> Zindari et al. (2026). <a href="https://arxiv.org/abs/2605.19028"><cite>Learning When to Adapt.</cite> Fig. 10, attention panels.</a></p>
+  <aside class="speaker-notes">Use this static appendix slide if asked how gates differ across attention matrices. These are the original query, key, value, and output projection panels from the first row of Figure 10 on page 30 of the supplied DISeL paper. The three MLP panels from the second row are omitted. All four attention panels remain at equal scale with their original data, colors, legends, labels, axes, and order. The experiment uses the rank-32 Llama 2-7B math adapter on held-out GSM8K inputs, scoring response tokens. Each panel compares early layers 0–10, middle layers 11–21, and late layers 22–31. Query, key, value, and output correspond to q_proj, k_proj, v_proj, and o_proj. The legend means show higher gate activation for query and key than for value in each depth band; for example, late-layer means are approximately 0.412, 0.462, 0.216, and 0.270 respectively. Density-axis ranges differ, so compare the distributions and their reported means rather than raw peak heights across panels. Gate values measure how strongly the rank components are scaled, not the norm of the actual correction or a causal measure of knowledge. These descriptive patterns do not establish that updating a particular projection is necessary for performance. Source: papers/disel.pdf, Appendix VII.1, Fig. 10.</aside>
+</section>
+<section id="39" class="slide disel-limitations-slide" data-title="DISeL: overhead and limitations" data-backup>
+  <h1 class="slide__title">DISeL: overhead and limitations</h1><div class="slide__rule"></div>
+  <div class="slide__content">
+    <div class="research-principles disel-limitations-columns">
+      <article>
+        <h2>Training overhead</h2>
+        <p>More parameters than LoRA:<br>\(+\,r(d_x+1)\) per matrix.<br>Extra training memory.</p>
+      </article>
+      <article>
+        <h2>Inference cost</h2>
+        <p>Gates run for every token.<br>The update cannot be merged<br>into fixed weights.</p>
+      </article>
+      <article>
+        <h2>Retention limits</h2>
+        <p>Some skills may still be lost.<br>Depends on initialization<br>and training.</p>
+      </article>
+    </div>
+  </div>
+  <div class="slide__number">A14</div>
+  <p class="slide-citation"><span class="citation-index">[3]</span> Zindari et al. (2026). <a href="https://arxiv.org/abs/2605.19028"><cite>Learning When to Adapt.</cite> §3</a> and <a href="https://arxiv.org/abs/2605.19028">§8.</a></p>
+  <aside class="speaker-notes">Three practical limitations, based on the overhead paragraph in §3 (page 4) and the limitations paragraph in §8 (page 9) of the supplied DISeL paper. First, each adapted matrix adds W_g with r d_x entries and b with r entries, or r(d_x + 1) parameters beyond LoRA at the same rank and with the same target modules. These parameters also need gradients and optimizer state during training, and the gate branch adds activations. For a square 4096-by-4096 projection at rank 16, DISeL has 196,624 trainable parameters versus LoRA's 131,072, about 1.5 times the adapter parameter count. This is not a 1.5-times total-memory or runtime claim; the frozen model still occupies memory. Second, computing gates costs O(r d_x) arithmetic per token and adapted matrix, plus sigmoid and elementwise scaling. Because G(x) depends on the input, A G(x) B cannot generally be merged into one fixed weight matrix as a standard LoRA update can. This is a structural inference cost, not a measured latency percentage; the paper does not provide a timing or peak-memory benchmark. Soft gates near zero do not by themselves skip the adapter computation. Third, retention is empirical, not guaranteed for every earlier capability. Results depend on gate initialization, learning rates, and the adapted modules. Without pre-training data in the fine-tuning loss, suppression of updates on earlier inputs is not directly enforced. The reported experiments concern single-task fine-tuning; multi-task and continual learning remain future work.</aside>
+</section>
+</main>
+<div class="nav-hint">← → reveal / navigate · F fullscreen · N notes</div>
+<div class="notes-overlay" role="dialog" aria-label="Speaker notes" aria-modal="true"></div>
+<script src="../../shared/slide-system/vendor/katex/katex.min.js"></script>
+<script src="../../shared/slide-system/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="reveals.js"></script>
+<script src="runtime.js"></script>
+<script src="presentation.js"></script>
+</body>
+</html>
